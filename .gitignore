@@ -447,3 +447,7 @@ Thumbs.db
 # Backup files
 *.bak
 *.backup
+
+# Private development guides and notes
+docs/guides/
+*.http
