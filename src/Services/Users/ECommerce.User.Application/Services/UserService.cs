@@ -1,74 +1,126 @@
 using AutoMapper;
+using ECommerce.Common.Exceptions;
 using ECommerce.User.Application.DTOs;
 using ECommerce.User.Application.Interfaces;
 using ECommerce.User.Domain.Interfaces;
-using ECommerce.Common.Exceptions;
 
 namespace ECommerce.User.Application.Services;
 
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
-    private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IMapper _mapper;
 
     public UserService(
         IUserRepository userRepository,
-        IMapper mapper,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        IMapper mapper)
     {
         _userRepository = userRepository;
-        _mapper = mapper;
         _passwordHasher = passwordHasher;
+        _mapper = mapper;
     }
 
-    public async Task<UserDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<UserDto> GetProfileAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
-        return user == null ? null : _mapper.Map<UserDto>(user);
-    }
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        
+        if (user == null)
+            throw new NotFoundException("User not found");
 
-    public async Task<UserDto?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
-    {
-        var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
-        return user == null ? null : _mapper.Map<UserDto>(user);
+        return _mapper.Map<UserDto>(user);
     }
 
     public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        
         if (user == null)
-            throw new NotFoundException("User", userId);
+            throw new NotFoundException("User not found");
 
-        _mapper.Map(dto, user);
+        // Check if username is being changed and if it's already taken
+        if (!string.IsNullOrEmpty(dto.Username) && dto.Username != user.Username)
+        {
+            var existingUser = await _userRepository.GetByUsernameAsync(dto.Username, cancellationToken);
+            if (existingUser != null)
+                throw new BusinessException("Username is already taken", "USERNAME_EXISTS");
+            
+            user.Username = dto.Username;
+        }
+
+        // Update user properties
+        user.FirstName = dto.FirstName;
+        user.LastName = dto.LastName;
+        user.PhoneNumber = dto.PhoneNumber;
+        user.DateOfBirth = dto.DateOfBirth;
         user.UpdatedAt = DateTime.UtcNow;
 
         await _userRepository.UpdateAsync(user, cancellationToken);
 
-        return _mapper.Map<UserDto>(user);
+        // Reload to get updated navigation properties
+        var updatedUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        return _mapper.Map<UserDto>(updatedUser);
     }
 
     public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto dto, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        
         if (user == null)
-            throw new NotFoundException("User", userId);
+            throw new NotFoundException("User not found");
 
         // Verify current password
         if (!_passwordHasher.VerifyPassword(dto.CurrentPassword, user.PasswordHash))
-            throw new BusinessException("Current password is incorrect");
+            throw new BusinessException("Current password is incorrect", "INVALID_PASSWORD");
 
-        // Hash and update new password
+        // Validate new password is different
+        if (_passwordHasher.VerifyPassword(dto.NewPassword, user.PasswordHash))
+            throw new BusinessException("New password must be different from current password", "SAME_PASSWORD");
+
+        // Update password
         user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        // Invalidate all sessions for security
+        foreach (var session in user.Sessions)
+        {
+            session.IsActive = false;
+        }
 
+        await _userRepository.UpdateAsync(user, cancellationToken);
         return true;
     }
 
-    public async Task<bool> DeleteAccountAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAccountAsync(Guid userId, string password, CancellationToken cancellationToken = default)
     {
-        return await _userRepository.DeleteAsync(userId, cancellationToken);
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        
+        if (user == null)
+            throw new NotFoundException("User not found");
+
+        // Verify password before deletion
+        if (!_passwordHasher.VerifyPassword(password, user.PasswordHash))
+            throw new BusinessException("Password is incorrect", "INVALID_PASSWORD");
+
+        // Soft delete
+        await _userRepository.DeleteAsync(userId, cancellationToken);
+        return true;
+    }
+
+    public async Task<UserDto> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        
+        if (user == null)
+            throw new NotFoundException("User not found");
+
+        return _mapper.Map<UserDto>(user);
+    }
+
+    public async Task<IEnumerable<UserDto>> GetAllUsersAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var users = await _userRepository.GetAllAsync(pageNumber, pageSize, cancellationToken);
+        return _mapper.Map<IEnumerable<UserDto>>(users);
     }
 }

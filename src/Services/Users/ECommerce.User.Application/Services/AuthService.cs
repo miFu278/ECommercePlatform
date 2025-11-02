@@ -39,6 +39,15 @@ namespace ECommerce.User.Application
                 throw new BusinessException("Email already registered", "EMAIL_EXISTS");
             }
 
+            // Check if username exists (if provided)
+            if (!string.IsNullOrEmpty(dto.Username))
+            {
+                if (await _userRepository.GetByUsernameAsync(dto.Username, cancellationToken) != null)
+                {
+                    throw new BusinessException("Username already taken", "USERNAME_EXISTS");
+                }
+            }
+
             // Create user entity
             var user = _mapper.Map<Domain.Entities.User>(dto);
             user.PasswordHash = _passwordHasher.HashPassword(dto.Password);

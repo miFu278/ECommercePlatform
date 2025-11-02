@@ -3,6 +3,7 @@ using ECommerce.User.API.Middleware;
 using ECommerce.User.Application;
 using ECommerce.User.Application.Interfaces;
 using ECommerce.User.Application.Mappings;
+using ECommerce.User.Application.Services;
 using ECommerce.User.Application.Validators;
 using ECommerce.User.Domain.Interfaces;
 using ECommerce.User.Infrastructure.Data;
@@ -19,7 +20,55 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+
+// Swagger/OpenAPI
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "ECommerce User Service API",
+        Version = "v1",
+        Description = "API for user authentication and profile management",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "ECommerce Platform",
+            Email = "support@ecommerce.com"
+        }
+    });
+
+    // Add JWT Authentication
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    // Include XML comments if available
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+});
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -37,6 +86,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -83,7 +133,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ECommerce User Service API v1");
+        options.RoutePrefix = string.Empty; // Set Swagger UI at app root
+        options.DocumentTitle = "ECommerce User Service API";
+        options.DefaultModelsExpandDepth(-1); // Hide schemas section by default
+    });
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
