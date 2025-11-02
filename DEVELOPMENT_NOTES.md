@@ -2,12 +2,24 @@
 
 ## Completed Features ✅
 
-### Email Verification & Password Reset
+### Authentication
+- User registration
 - Email verification (24h token)
+- Login/Logout
 - Forgot password flow
 - Password reset (1h token)
+- JWT token authentication
+- Refresh token
 - SMTP Gmail integration
 - HTML email templates
+
+### Profile Management
+- Get user profile
+- Update profile (name, phone, DOB)
+- Change password
+- Delete account (soft delete)
+- Admin: Get user by ID
+- Admin: Get all users (paginated)
 
 ### Tech Stack
 - ASP.NET Core 9.0
@@ -17,6 +29,8 @@
 - AutoMapper
 
 ### API Endpoints
+
+**Authentication:**
 ```
 POST   /api/auth/register
 GET    /api/auth/verify-email
@@ -25,6 +39,16 @@ POST   /api/auth/forgot-password
 POST   /api/auth/reset-password
 POST   /api/auth/refresh-token
 POST   /api/auth/logout
+```
+
+**Profile Management:**
+```
+GET    /api/user/profile           (Authenticated)
+PUT    /api/user/profile           (Authenticated)
+POST   /api/user/change-password   (Authenticated)
+DELETE /api/user/account           (Authenticated)
+GET    /api/user/{id}              (Admin only)
+GET    /api/user                   (Admin only)
 ```
 
 ### Configuration
@@ -45,7 +69,8 @@ POST   /api/auth/logout
 - `docs/guides/` - Private development guides (gitignored)
 
 ### Testing
-- `src/Services/Users/ECommerce.User.API/test-email.http` - Test requests (gitignored)
+- `src/Services/Users/ECommerce.User.API/test-email.http` - Auth test requests (gitignored)
+- `src/Services/Users/ECommerce.User.API/user-profile.http` - Profile test requests (gitignored)
 
 ## Quick Start
 
