@@ -89,7 +89,7 @@ A scalable, cloud-native e-commerce platform built with .NET 9 microservices arc
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/ECommercePlatform.git
+git clone https://github.com/miFu278/ECommercePlatform.git
 cd ECommercePlatform
 ```
 
@@ -249,7 +249,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **Your Name** - *Initial work*
+- **Minh Phuc** - *Initial work*
 
 ## 🙏 Acknowledgments
 
