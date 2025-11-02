@@ -30,12 +30,13 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         // Unique constraint
         builder.HasIndex(r => r.Name).IsUnique();
 
-        // Seed data
+        // Seed data - Use fixed date to avoid migration changes
+        var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         builder.HasData(
-            new Role { Id = 1, Name = "Admin", Description = "Full system access", CreatedAt = DateTime.UtcNow },
-            new Role { Id = 2, Name = "Manager", Description = "Product and order management", CreatedAt = DateTime.UtcNow },
-            new Role { Id = 3, Name = "Customer", Description = "Standard customer access", CreatedAt = DateTime.UtcNow },
-            new Role { Id = 4, Name = "Guest", Description = "Limited browsing access", CreatedAt = DateTime.UtcNow }
+            new Role { Id = 1, Name = "Admin", Description = "Full system access", CreatedAt = seedDate },
+            new Role { Id = 2, Name = "Manager", Description = "Product and order management", CreatedAt = seedDate },
+            new Role { Id = 3, Name = "Customer", Description = "Standard customer access", CreatedAt = seedDate },
+            new Role { Id = 4, Name = "Guest", Description = "Limited browsing access", CreatedAt = seedDate }
         );
     }
 }

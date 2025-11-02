@@ -1,0 +1,211 @@
+# CodeRabbit Configuration for ECommerce Platform
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+# Language settings
+language: en-US
+
+# Review settings
+reviews:
+  # Enable auto reviews on pull requests
+  auto_review:
+    enabled: true
+    drafts: false  # Don't review draft PRs
+    
+  # Review profile
+  profile: chill  # Options: chill, assertive
+  
+  # Request changes workflow
+  request_changes_workflow: false
+  
+  # High level summary
+  high_level_summary: true
+  
+  # Poem style summary (fun!)
+  poem: false
+  
+  # Review status comment
+  review_status_comment: true
+  
+  # Collapse walkthrough
+  collapse_walkthrough: false
+  
+  # Path filters - files to review
+  path_filters:
+    - "!**/*.md"  # Skip markdown files
+    - "!**/docs/**"  # Skip documentation
+    - "!**/*.json"  # Skip JSON config files (unless critical)
+    - "!**/*.yaml"
+    - "!**/*.yml"
+    - "!**/bin/**"
+    - "!**/obj/**"
+    - "!**/node_modules/**"
+    - "!**/.vs/**"
+    - "!**/.idea/**"
+    - "**/*.cs"  # Review C# files
+    - "**/*.csproj"  # Review project files
+    - "**/Dockerfile"
+    - "**/docker-compose*.yml"
+    
+  # Auto-approve settings
+  auto_approve:
+    enabled: false  # Require manual approval
+    
+# Chat settings
+chat:
+  auto_reply: true
+
+# Knowledge base
+knowledge_base:
+  # Learnings from previous reviews
+  learnings:
+    scope: global  # Share learnings across all PRs
+    
+  # Opt-in for learning from your codebase
+  opt_in: true
+
+# Tools configuration
+tools:
+  # AST-based analysis
+  ast-grep:
+    enabled: true
+    
+  # Semgrep for security scanning
+  semgrep:
+    enabled: true
+    
+  # Shellcheck for shell scripts
+  shellcheck:
+    enabled: true
+    
+  # Ruff for Python (if you add Python later)
+  ruff:
+    enabled: false
+    
+  # Biome for JavaScript/TypeScript (if you add frontend)
+  biome:
+    enabled: false
+
+# Custom instructions for reviewers
+instructions:
+  - "Focus on security vulnerabilities, especially around authentication and authorization"
+  - "Check for proper error handling and logging"
+  - "Verify that sensitive data (passwords, secrets, API keys) are not hardcoded"
+  - "Ensure database queries are parameterized to prevent SQL injection"
+  - "Check for proper input validation and sanitization"
+  - "Review async/await usage and potential deadlocks"
+  - "Verify proper disposal of resources (using statements, IDisposable)"
+  - "Check for proper exception handling in API controllers"
+  - "Ensure DTOs have proper validation attributes"
+  - "Review AutoMapper configurations for correctness"
+  - "Check for N+1 query problems in Entity Framework"
+  - "Verify proper use of cancellation tokens"
+  - "Check for thread-safety issues in services"
+  - "Ensure proper HTTP status codes are returned"
+  - "Review middleware order in Program.cs"
+  - "Check for proper CORS configuration"
+  - "Verify JWT token validation is secure"
+  - "Ensure email templates are XSS-safe"
+  - "Check for proper rate limiting on sensitive endpoints"
+  - "Review database migrations for breaking changes"
+
+# Early access features
+early_access: true
+
+# Enable/disable specific checks
+checks:
+  # Security checks
+  security:
+    enabled: true
+    severity: high
+    
+  # Performance checks
+  performance:
+    enabled: true
+    severity: medium
+    
+  # Code style checks
+  style:
+    enabled: true
+    severity: low
+    
+  # Best practices
+  best_practices:
+    enabled: true
+    severity: medium
+    
+  # Documentation
+  documentation:
+    enabled: true
+    severity: low
+
+# Project-specific rules for .NET/C#
+rules:
+  # Async/await patterns
+  - id: async-await-pattern
+    pattern: "async methods should use ConfigureAwait(false) in library code"
+    severity: medium
+    
+  # Dispose pattern
+  - id: dispose-pattern
+    pattern: "IDisposable objects should be properly disposed"
+    severity: high
+    
+  # Null reference checks
+  - id: null-reference
+    pattern: "Check for null before accessing properties"
+    severity: high
+    
+  # SQL injection
+  - id: sql-injection
+    pattern: "Use parameterized queries, never string concatenation"
+    severity: critical
+    
+  # Sensitive data
+  - id: sensitive-data
+    pattern: "No hardcoded passwords, secrets, or API keys"
+    severity: critical
+
+# Ignore patterns
+ignore:
+  # Generated files
+  - "**/Migrations/**/*.cs"  # EF migrations
+  - "**/obj/**"
+  - "**/bin/**"
+  - "**/*.Designer.cs"
+  - "**/*.generated.cs"
+  
+  # Test files (optional - remove if you want reviews)
+  # - "**/Tests/**"
+  # - "**/*.Tests/**"
+  
+  # Third-party code
+  - "**/packages/**"
+  - "**/node_modules/**"
+  
+  # IDE files
+  - "**/.vs/**"
+  - "**/.idea/**"
+  - "**/*.user"
+  - "**/*.suo"
+
+# Tone and style
+tone_instructions: |
+  - Be constructive and helpful
+  - Explain the "why" behind suggestions
+  - Provide code examples when suggesting changes
+  - Prioritize security and performance issues
+  - Be respectful and professional
+  - Focus on teaching, not just pointing out issues
+  - Acknowledge good practices when you see them
+
+# Summary style
+summary_style: concise  # Options: concise, detailed
+
+# Enable GitHub Actions integration
+github_actions:
+  enabled: true
+  
+# Enable issue creation for critical findings
+create_issues:
+  enabled: false  # Set to true if you want auto-issue creation
+  severity_threshold: high

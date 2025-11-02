@@ -5,4 +5,6 @@ public interface ITokenService
     string GenerateAccessToken(Domain.Entities.User user);
     string GenerateRefreshToken();
     Guid? ValidateToken(string token);
+    string GenerateEmailVerificationToken();
+    string GeneratePasswordResetToken();
 }

@@ -11,7 +11,10 @@ public class UserMappingProfile : Profile
         CreateMap<Domain.Entities.User, UserDto>()
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
             .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => 
-                src.UserRoles.Select(ur => ur.Role.Name).ToList()));
+                src.UserRoles
+                    .Where(ur => ur.Role != null)
+                    .Select(ur => ur.Role.Name)
+                    .ToList()));
 
         // RegisterDto -> User
         CreateMap<RegisterDto, Domain.Entities.User>()
