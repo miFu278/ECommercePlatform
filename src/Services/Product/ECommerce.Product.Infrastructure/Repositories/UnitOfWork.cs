@@ -1,17 +1,19 @@
 using ECommerce.Product.Domain.Interfaces;
 using ECommerce.Product.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore.Storage;
+using MongoDB.Driver;
 
 namespace ECommerce.Product.Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly ProductDbContext _context;
-    private IDbContextTransaction? _transaction;
+    private readonly MongoDbContext _context;
+    private readonly IMongoClient _mongoClient;
+    private IClientSessionHandle? _session;
 
-    public UnitOfWork(ProductDbContext context)
+    public UnitOfWork(MongoDbContext context, IMongoClient mongoClient)
     {
         _context = context;
+        _mongoClient = mongoClient;
         Products = new ProductRepository(_context);
         Categories = new CategoryRepository(_context);
         Tags = new TagRepository(_context);
@@ -23,38 +25,41 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.SaveChangesAsync(cancellationToken);
+        // MongoDB doesn't have a traditional SaveChanges
+        // Changes are committed immediately with each operation
+        // This method is kept for interface compatibility
+        return await Task.FromResult(0);
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        _transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        _session = await _mongoClient.StartSessionAsync(cancellationToken: cancellationToken);
+        _session.StartTransaction();
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction != null)
+        if (_session != null)
         {
-            await _transaction.CommitAsync(cancellationToken);
-            await _transaction.DisposeAsync();
-            _transaction = null;
+            await _session.CommitTransactionAsync(cancellationToken);
+            _session.Dispose();
+            _session = null;
         }
     }
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction != null)
+        if (_session != null)
         {
-            await _transaction.RollbackAsync(cancellationToken);
-            await _transaction.DisposeAsync();
-            _transaction = null;
+            await _session.AbortTransactionAsync(cancellationToken);
+            _session.Dispose();
+            _session = null;
         }
     }
 
     public void Dispose()
     {
-        _transaction?.Dispose();
-        _context.Dispose();
+        _session?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

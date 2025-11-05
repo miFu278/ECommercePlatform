@@ -1,65 +1,51 @@
 using ECommerce.Product.Domain.Interfaces;
 using ECommerce.Product.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace ECommerce.Product.Infrastructure.Repositories;
 
-public class ProductRepository : Repository<Domain.Entities.Product>, IProductRepository
+public class ProductRepository : MongoRepository<Domain.Entities.Product>, IProductRepository
 {
-    public ProductRepository(ProductDbContext context) : base(context)
+    public ProductRepository(IMongoDbContext context) : base(context)
     {
     }
 
-    public async Task<Domain.Entities.Product?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Domain.Entities.Product?> GetBySlugAsync(string slug)
     {
-        return await _dbSet
-            .Include(p => p.Variants)
-            .Include(p => p.Images)
-            .Include(p => p.Attributes)
-            .Include(p => p.Tags)
-                .ThenInclude(pt => pt.Tag)
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        return await FindOneAsync(p => p.Slug == slug);
     }
 
-    public async Task<IEnumerable<Domain.Entities.Product>> GetByCategoryIdAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Product>> GetByCategoryIdAsync(string categoryId)
     {
-        return await _dbSet
-            .Where(p => p.CategoryId == categoryId)
-            .Include(p => p.Images)
-            .ToListAsync(cancellationToken);
+        return await FindAsync(p => p.CategoryId == categoryId);
     }
 
-    public async Task<IEnumerable<Domain.Entities.Product>> GetByTagIdAsync(Guid tagId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Product>> SearchAsync(string searchTerm)
     {
-        return await _dbSet
-            .Where(p => p.Tags.Any(pt => pt.TagId == tagId))
-            .Include(p => p.Images)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IEnumerable<Domain.Entities.Product>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default)
-    {
-        var lowerSearchTerm = searchTerm.ToLower();
+        var filter = Builders<Domain.Entities.Product>.Filter.Or(
+            Builders<Domain.Entities.Product>.Filter.Regex(p => p.Name, new BsonRegularExpression(searchTerm, "i")),
+            Builders<Domain.Entities.Product>.Filter.Regex(p => p.LongDescription, new BsonRegularExpression(searchTerm, "i")),
+            Builders<Domain.Entities.Product>.Filter.Regex(p => p.ShortDescription, new BsonRegularExpression(searchTerm, "i")),
+            Builders<Domain.Entities.Product>.Filter.Regex(p => p.Sku, new BsonRegularExpression(searchTerm, "i"))
+        );
         
-        return await _dbSet
-            .Where(p => p.Name.ToLower().Contains(lowerSearchTerm) 
-                     || p.LongDescription.ToLower().Contains(lowerSearchTerm)
-                     || p.ShortDescription.ToLower().Contains(lowerSearchTerm)
-                     || p.Slug.ToLower().Contains(lowerSearchTerm))
-            .Include(p => p.Images)
-            .ToListAsync(cancellationToken);
+        return await FindAsync(filter);
     }
 
-    public async Task<bool> ExistsBySlugAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsBySlugAsync(string slug, string? excludeId = null)
     {
-        var query = _dbSet.Where(p => p.Slug == slug);
+        var filter = Builders<Domain.Entities.Product>.Filter.Eq(p => p.Slug, slug);
         
-        if (excludeId.HasValue)
+        if (!string.IsNullOrEmpty(excludeId))
         {
-            query = query.Where(p => p.Id != excludeId.Value);
+            filter = Builders<Domain.Entities.Product>.Filter.And(
+                filter,
+                Builders<Domain.Entities.Product>.Filter.Ne(p => p.Id, excludeId)
+            );
         }
         
-        return await query.AnyAsync(cancellationToken);
+        var product = await FindOneAsync(filter);
+        return product != null;
     }
 }

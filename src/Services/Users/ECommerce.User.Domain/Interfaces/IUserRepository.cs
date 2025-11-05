@@ -1,13 +1,14 @@
 using ECommerce.Shared.Abstractions.Repositories;
-using ECommerce.User.Domain.Entities;
 
 namespace ECommerce.User.Domain.Interfaces;
 
-public interface IUserRepository : IRepository<User>
+public interface IUserRepository : IRepository<Entities.User>
 {
-    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
-    Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
-    Task<IEnumerable<User>> GetAllAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<Entities.User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task<Entities.User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
+    Task<Entities.User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+    Task<Entities.User?> GetByEmailVerificationTokenAsync(string token, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Entities.User>> GetAllAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default);
     Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
 }
