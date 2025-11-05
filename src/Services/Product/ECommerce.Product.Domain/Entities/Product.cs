@@ -1,65 +1,124 @@
-﻿using ECommerce.Product.Domain.Enums;
-using ECommerce.Shared.Abstractions.Entities;
+﻿using ECommerce.Product.Domain.Attributes;
+using ECommerce.Product.Domain.Enums;
+using ECommerce.Product.Domain.ValueObjects;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace ECommerce.Product.Domain.Entities
 {
-    public class Product : BaseEntity, IAuditableEntity, ISoftDeletable
+    [BsonCollection("products")]
+    public class Product
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+        
         // Identity
+        [BsonElement("sku")]
         public string Sku { get; set; } = string.Empty;
+        
+        [BsonElement("name")]
         public string Name { get; set; } = string.Empty;
+        
+        [BsonElement("slug")]
         public string Slug { get; set; } = string.Empty;
 
         // Description
+        [BsonElement("shortDescription")]
         public string ShortDescription { get; set; } = string.Empty;
+        
+        [BsonElement("longDescription")]
         public string LongDescription { get; set; } = string.Empty;
 
         // Pricing
+        [BsonElement("price")]
         public decimal Price { get; set; }
-        public decimal? CompareAtPrice { get; set; } // Original price before discount
-        public decimal Cost { get; set; } // Cost to the business
+        
+        [BsonElement("compareAtPrice")]
+        public decimal? CompareAtPrice { get; set; }
+        
+        [BsonElement("costPrice")]
+        public decimal CostPrice { get; set; }
 
         // Category
-        public Guid CategoryId { get; set; }
-        public Category Category { get; set; } = null!;
+        [BsonElement("categoryId")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string CategoryId { get; set; } = string.Empty;
+        
+        [BsonElement("categoryPath")]
+        public List<string> CategoryPath { get; set; } = new();
 
-        // Brand
-        public string? Brand { get; set; }
+        // Images
+        [BsonElement("images")]
+        public List<ProductImage> Images { get; set; } = new();
+
+        // Tags
+        [BsonElement("tagIds")]
+        public List<string> TagIds { get; set; } = new();
+
+        // Attributes (for variants like color, size)
+        [BsonElement("attributes")]
+        public List<ProductAttribute> Attributes { get; set; } = new();
+
+        // Specifications
+        [BsonElement("specifications")]
+        public ProductSpecifications? Specifications { get; set; }
 
         // Status 
-        public ProductStatus Status { get; set; } // Draft, Active, Archived
-        public bool IsVisible { get; set; } // Show on storefront
-        public bool IsFeatured { get; set; } // Featured product
+        [BsonElement("status")]
+        [BsonRepresentation(BsonType.String)]
+        public ProductStatus Status { get; set; }
+        
+        [BsonElement("isActive")]
+        public bool IsActive { get; set; }
+        
+        [BsonElement("isFeatured")]
+        public bool IsFeatured { get; set; }
+        
+        [BsonElement("isPublished")]
+        public bool IsPublished { get; set; }
+        
+        [BsonElement("publishedAt")]
+        public DateTime? PublishedAt { get; set; }
 
         // SEO
-        public string? MetaTitle { get; set; }
-        public string? MetaDescription { get; set; }
-        public string? MetaKeywords { get; set; }
+        [BsonElement("seo")]
+        public ProductSeo? Seo { get; set; }
 
         // Inventory
-        public bool TrackInventory { get; set; }
-        public int StockQuantity { get; set; }
-        public int LowStockThreshold { get; set; }
-        public StockStatus StockStatus { get; set; } // InStock, OutOfStock, LowStock
+        [BsonElement("inventory")]
+        public ProductInventory Inventory { get; set; } = new();
 
-        // Shipping
-        public decimal Weight { get; set; } // In kilograms
-        public decimal? Length { get; set; } // In centimeters
-        public decimal? Width { get; set; } // In centimeters
-        public decimal? Height { get; set; } // In centimeters
-
-        // IAuditableEntity
-        public Guid CreatedBy { get; set; }
-        public Guid? UpdatedBy { get; set; }
+        // Dimensions
+        [BsonElement("weight")]
+        public decimal Weight { get; set; }
         
-        // ISoftDeletable
-        public DateTime? DeletedAt { get; set; }
+        [BsonElement("dimensions")]
+        public ProductDimensions? Dimensions { get; set; }
 
-        // Navigation Properties
-        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
-        public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
-        public ICollection<ProductTag> Tags { get; set; } = new List<ProductTag>();
-        public ICollection<ProductAttribute> Attributes { get; set; } = new List<ProductAttribute>();
+        // Rating (calculated from reviews)
+        [BsonElement("rating")]
+        public ProductRating? Rating { get; set; }
+
+        // Audit
+        [BsonElement("createdBy")]
+        public string? CreatedBy { get; set; }
+        
+        [BsonElement("updatedBy")]
+        public string? UpdatedBy { get; set; }
+        
+        [BsonElement("createdAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        [BsonElement("updatedAt")]
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        
+        // Soft Delete
+        [BsonElement("deletedAt")]
+        public DateTime? DeletedAt { get; set; }
+        
+        [BsonElement("isDeleted")]
+        public bool IsDeleted { get; set; }
     }
 }
 

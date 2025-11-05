@@ -55,4 +55,21 @@ public class UserRepository : Repository<Domain.Entities.User>, IUserRepository
     {
         return await _dbSet.CountAsync(cancellationToken);
     }
+
+    public async Task<Domain.Entities.User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .Include(u => u.Sessions)
+            .FirstOrDefaultAsync(u => u.Sessions.Any(s => s.RefreshToken == refreshToken), cancellationToken);
+    }
+
+    public async Task<Domain.Entities.User?> GetByEmailVerificationTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.EmailVerificationToken == token, cancellationToken);
+    }
 }

@@ -1,11 +1,13 @@
-using ECommerce.Shared.Abstractions.Repositories;
-
 namespace ECommerce.Product.Domain.Interfaces;
 
-public interface ICategoryRepository : IRepository<Entities.Category>
+public interface ICategoryRepository
 {
-    Task<Entities.Category?> GetByIdWithChildrenAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Entities.Category>> GetRootCategoriesAsync(CancellationToken cancellationToken = default);
-    Task<IEnumerable<Entities.Category>> GetChildCategoriesAsync(Guid parentId, CancellationToken cancellationToken = default);
-    Task<bool> ExistsBySlugAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Entities.Category>> GetAllAsync();
+    Task<Entities.Category?> GetByIdAsync(string id);
+    Task<IEnumerable<Entities.Category>> GetRootCategoriesAsync();
+    Task<IEnumerable<Entities.Category>> GetChildCategoriesAsync(string parentId);
+    Task<Entities.Category> CreateAsync(Entities.Category category);
+    Task<Entities.Category> UpdateAsync(string id, Entities.Category category);
+    Task<bool> DeleteAsync(string id);
+    Task<bool> ExistsBySlugAsync(string slug, string? excludeId = null);
 }

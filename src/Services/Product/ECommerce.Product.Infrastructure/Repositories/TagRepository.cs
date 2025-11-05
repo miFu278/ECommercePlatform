@@ -1,25 +1,21 @@
 using ECommerce.Product.Domain.Interfaces;
 using ECommerce.Product.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Product.Infrastructure.Repositories;
 
-public class TagRepository : Repository<Domain.Entities.Tag>, ITagRepository
+public class TagRepository : MongoRepository<Domain.Entities.Tag>, ITagRepository
 {
-    public TagRepository(ProductDbContext context) : base(context)
+    public TagRepository(IMongoDbContext context) : base(context)
     {
     }
 
-    public async Task<Domain.Entities.Tag?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<Domain.Entities.Tag?> GetByNameAsync(string name)
     {
-        return await _dbSet
-            .FirstOrDefaultAsync(t => t.Name == name, cancellationToken);
+        return await FindOneAsync(t => t.Name == name);
     }
 
-    public async Task<IEnumerable<Domain.Entities.Tag>> GetByNamesAsync(IEnumerable<string> names, CancellationToken cancellationToken = default)
+    public async Task<Domain.Entities.Tag?> GetBySlugAsync(string slug)
     {
-        return await _dbSet
-            .Where(t => names.Contains(t.Name))
-            .ToListAsync(cancellationToken);
+        return await FindOneAsync(t => t.Slug == slug);
     }
 }

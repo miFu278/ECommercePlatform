@@ -4,6 +4,10 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\ECommerce.Shared.Abstractions\ECommerce.Shared.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="2.29.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

@@ -1,46 +1,38 @@
 using ECommerce.Product.Domain.Interfaces;
 using ECommerce.Product.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace ECommerce.Product.Infrastructure.Repositories;
 
-public class CategoryRepository : Repository<Domain.Entities.Category>, ICategoryRepository
+public class CategoryRepository : MongoRepository<Domain.Entities.Category>, ICategoryRepository
 {
-    public CategoryRepository(ProductDbContext context) : base(context)
+    public CategoryRepository(IMongoDbContext context) : base(context)
     {
     }
 
-    public async Task<Domain.Entities.Category?> GetByIdWithChildrenAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Category>> GetRootCategoriesAsync()
     {
-        return await _dbSet
-            .Include(c => c.Children)
-            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        return await FindAsync(c => c.ParentId == null);
     }
 
-    public async Task<IEnumerable<Domain.Entities.Category>> GetRootCategoriesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Category>> GetChildCategoriesAsync(string parentId)
     {
-        return await _dbSet
-            .Where(c => c.ParentId == null)
-            .Include(c => c.Children)
-            .ToListAsync(cancellationToken);
+        return await FindAsync(c => c.ParentId == parentId);
     }
 
-    public async Task<IEnumerable<Domain.Entities.Category>> GetChildCategoriesAsync(Guid parentId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsBySlugAsync(string slug, string? excludeId = null)
     {
-        return await _dbSet
-            .Where(c => c.ParentId == parentId)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<bool> ExistsBySlugAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
-    {
-        var query = _dbSet.Where(c => c.Slug == slug);
+        var filter = Builders<Domain.Entities.Category>.Filter.Eq(c => c.Slug, slug);
         
-        if (excludeId.HasValue)
+        if (!string.IsNullOrEmpty(excludeId))
         {
-            query = query.Where(c => c.Id != excludeId.Value);
+            filter = Builders<Domain.Entities.Category>.Filter.And(
+                filter,
+                Builders<Domain.Entities.Category>.Filter.Ne(c => c.Id, excludeId)
+            );
         }
         
-        return await query.AnyAsync(cancellationToken);
+        var category = await FindOneAsync(filter);
+        return category != null;
     }
 }

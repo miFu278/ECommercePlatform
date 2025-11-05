@@ -147,13 +147,15 @@ namespace ECommerce.User.Application
         public async Task<LoginResponseDto> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             // Find user by refresh token
-            var users = await _unitOfWork.Users.GetAllAsync(1, 1000, cancellationToken);
-            var user = users.FirstOrDefault(u => u.Sessions.Any(s => s.RefreshToken == refreshToken && s.IsValid));
+            var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshToken, cancellationToken);
 
             if (user == null)
                 throw new UnauthorizedException("Invalid refresh token");
 
-            var session = user.Sessions.First(s => s.RefreshToken == refreshToken);
+            var session = user.Sessions.FirstOrDefault(s => s.RefreshToken == refreshToken && s.IsValid);
+            
+            if (session == null)
+                throw new UnauthorizedException("Invalid or expired refresh token");
 
             // Generate new access token
             var newAccessToken = _tokenService.GenerateAccessToken(user);
@@ -178,13 +180,16 @@ namespace ECommerce.User.Application
         public async Task<bool> LogoutAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             // Find user by refresh token -> deactivate session
-            var users = await _unitOfWork.Users.GetAllAsync(1, 1000, cancellationToken);
-            var user = users.FirstOrDefault(u => u.Sessions.Any(s => s.RefreshToken == refreshToken));
+            var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshToken, cancellationToken);
 
             if (user == null)
                 return false;
 
-            var session = user.Sessions.First(s => s.RefreshToken == refreshToken);
+            var session = user.Sessions.FirstOrDefault(s => s.RefreshToken == refreshToken);
+            
+            if (session == null)
+                return false;
+                
             session.IsActive = false;
 
             _unitOfWork.Users.Update(user);
@@ -195,8 +200,7 @@ namespace ECommerce.User.Application
         public async Task<bool> VerifyEmailAsync(string token, CancellationToken cancellationToken = default)
         {
             // Find user by verification token
-            var users = await _unitOfWork.Users.GetAllAsync(1, 10000, cancellationToken);
-            var user = users.FirstOrDefault(u => u.EmailVerificationToken == token);
+            var user = await _unitOfWork.Users.GetByEmailVerificationTokenAsync(token, cancellationToken);
 
             if (user == null)
                 throw new BusinessException("Invalid verification token", "INVALID_TOKEN");
@@ -268,6 +272,34 @@ namespace ECommerce.User.Application
 
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<bool> ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default)
+        {
+            // Find user by email
+            var user = await _unitOfWork.Users.GetByEmailAsync(email, cancellationToken);
+
+            if (user == null)
+            {
+                // Don't reveal if email exists or not for security
+                return true;
+            }
+
+            // Check if already verified
+            if (user.EmailVerified)
+                throw new BusinessException("Email is already verified", "EMAIL_ALREADY_VERIFIED");
+
+            // Generate new verification token
+            user.EmailVerificationToken = _tokenService.GenerateEmailVerificationToken();
+            user.EmailVerificationTokenExpires = DateTime.UtcNow.AddHours(24);
+
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Send verification email
+            await _emailService.SendEmailVerificationAsync(user.Email, user.EmailVerificationToken, cancellationToken);
+
             return true;
         }
     }
