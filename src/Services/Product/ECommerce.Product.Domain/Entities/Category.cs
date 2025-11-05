@@ -1,8 +1,9 @@
-﻿namespace ECommerce.Product.Domain.Entities
+﻿using ECommerce.Shared.Abstractions.Entities;
+
+namespace ECommerce.Product.Domain.Entities
 {
-    public class Category
+    public class Category : BaseEntity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Slug { get; set; } = string.Empty;
         public string? Description { get; set; }
@@ -20,10 +21,6 @@
         // SEO
         public string? MetaTitle { get; set; }
         public string? MetaDescription { get; set; }
-
-        // Timestamps
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
 
         // Navigation
         public ICollection<Product> Products { get; set; } = new List<Product>();

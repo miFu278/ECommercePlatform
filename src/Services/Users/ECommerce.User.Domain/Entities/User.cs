@@ -1,8 +1,9 @@
+using ECommerce.Shared.Abstractions.Entities;
+
 namespace ECommerce.User.Domain.Entities;
 
-public class User
+public class User : BaseEntity, ISoftDeletable
 {
-    public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? Username { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
@@ -27,9 +28,7 @@ public class User
     public DateTime? LockoutEnd { get; set; }
     public DateTime? LastLoginAt { get; set; }
     
-    // Timestamps
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    // ISoftDeletable
     public DateTime? DeletedAt { get; set; }
     
     // Navigation properties

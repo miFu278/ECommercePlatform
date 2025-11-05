@@ -1,10 +1,10 @@
 ﻿using ECommerce.Product.Domain.Enums;
+using ECommerce.Shared.Abstractions.Entities;
 
 namespace ECommerce.Product.Domain.Entities
 {
-    public class ProductVariant
+    public class ProductVariant : BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid ProductId { get; set; }
         public Product Product { get; set; } = null!;
 
@@ -35,9 +35,5 @@ namespace ECommerce.Product.Domain.Entities
         // Status
         public bool IsActive { get; set; }
         public int DisplayOrder { get; set; }
-
-        // Timestamps
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }

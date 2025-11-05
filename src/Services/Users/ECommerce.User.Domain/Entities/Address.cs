@@ -1,8 +1,9 @@
+using ECommerce.Shared.Abstractions.Entities;
+
 namespace ECommerce.User.Domain.Entities;
 
-public class Address
+public class Address : BaseEntity
 {
-    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string AddressType { get; set; } = "shipping"; // shipping, billing
     public string StreetAddress { get; set; } = string.Empty;
@@ -12,8 +13,6 @@ public class Address
     public string PostalCode { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
     public bool IsDefault { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     // Navigation properties
     public User User { get; set; } = null!;

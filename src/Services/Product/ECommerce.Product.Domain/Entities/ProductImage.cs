@@ -1,8 +1,9 @@
-﻿namespace ECommerce.Product.Domain.Entities
+﻿using ECommerce.Shared.Abstractions.Entities;
+
+namespace ECommerce.Product.Domain.Entities
 {
-    public class ProductImage
+    public class ProductImage : BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid ProductId { get; set; }
         public Product Product { get; set; } = null!;
 
@@ -19,9 +20,5 @@
         // Display
         public int DisplayOrder { get; set; }
         public bool IsPrimary { get; set; }
-
-        // Timestamps
-        public DateTime CreatedAt { get; set; }
-
     }
 }

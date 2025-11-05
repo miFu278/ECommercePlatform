@@ -1,11 +1,11 @@
 ﻿using ECommerce.Product.Domain.Enums;
+using ECommerce.Shared.Abstractions.Entities;
 
 namespace ECommerce.Product.Domain.Entities
 {
-    public class Product
+    public class Product : BaseEntity, IAuditableEntity, ISoftDeletable
     {
         // Identity
-        public Guid Id { get; set; }
         public string Sku { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Slug { get; set; } = string.Empty;
@@ -48,12 +48,12 @@ namespace ECommerce.Product.Domain.Entities
         public decimal? Width { get; set; } // In centimeters
         public decimal? Height { get; set; } // In centimeters
 
-        // Timestamps
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; } // Soft delete
+        // IAuditableEntity
         public Guid CreatedBy { get; set; }
         public Guid? UpdatedBy { get; set; }
+        
+        // ISoftDeletable
+        public DateTime? DeletedAt { get; set; }
 
         // Navigation Properties
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
