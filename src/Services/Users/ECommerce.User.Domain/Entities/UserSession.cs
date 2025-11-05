@@ -1,8 +1,9 @@
+using ECommerce.Shared.Abstractions.Entities;
+
 namespace ECommerce.User.Domain.Entities;
 
-public class UserSession
+public class UserSession : BaseEntity
 {
-    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string RefreshToken { get; set; } = string.Empty;
     public string? DeviceInfo { get; set; }
@@ -10,7 +11,6 @@ public class UserSession
     public string? UserAgent { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime ExpiresAt { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastAccessedAt { get; set; } = DateTime.UtcNow;
     
     // Navigation properties
