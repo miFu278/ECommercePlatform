@@ -13,9 +13,11 @@ public class UnitOfWork : IUnitOfWork
     {
         _context = context;
         Users = new UserRepository(_context);
+        Addresses = new AddressRepository(_context);
     }
 
     public IUserRepository Users { get; }
+    public IAddressRepository Addresses { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
