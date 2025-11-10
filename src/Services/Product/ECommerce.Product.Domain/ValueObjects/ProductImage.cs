@@ -13,6 +13,6 @@ public class ProductImage
     [BsonElement("isPrimary")]
     public bool IsPrimary { get; set; }
     
-    [BsonElement("displayOrder")]
-    public int DisplayOrder { get; set; }
+    [BsonElement("order")]
+    public int Order { get; set; }
 }

@@ -1,4 +1,5 @@
 using MongoDB.Bson.Serialization.Attributes;
+using ECommerce.Product.Domain.Enums;
 
 namespace ECommerce.Product.Domain.ValueObjects;
 

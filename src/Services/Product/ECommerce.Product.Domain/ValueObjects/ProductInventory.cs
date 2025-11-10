@@ -4,8 +4,8 @@ namespace ECommerce.Product.Domain.ValueObjects;
 
 public class ProductInventory
 {
-    [BsonElement("stockQuantity")]
-    public int StockQuantity { get; set; }
+    [BsonElement("stock")]
+    public int Stock { get; set; }
     
     [BsonElement("lowStockThreshold")]
     public int LowStockThreshold { get; set; }
