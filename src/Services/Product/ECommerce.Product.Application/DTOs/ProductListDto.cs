@@ -6,22 +6,22 @@ namespace ECommerce.Product.Application.DTOs;
 /// Simplified DTO for product listing (less data for performance)
 /// </summary>
 public record ProductListDto(
-    string? Id,
-    string Sku,
-    string Name,
-    string Slug,
-    string ShortDescription,
-    decimal Price,
-    decimal? CompareAtPrice,
-    string? PrimaryImageUrl,
-    string CategoryId,
-    string CategoryName,
-    bool IsActive,
-    bool IsFeatured,
-    int Stock,
-    bool InStock,
-    ProductRatingDto? Rating,
-    DateTime CreatedAt
+    string? Id = null,
+    string Sku = "",
+    string Name = "",
+    string Slug = "",
+    string ShortDescription = "",
+    decimal Price = 0,
+    decimal? CompareAtPrice = null,
+    string? PrimaryImageUrl = null,
+    string CategoryId = "",
+    string CategoryName = "",
+    bool IsActive = false,
+    bool IsFeatured = false,
+    int Stock = 0,
+    bool InStock = false,
+    ProductRatingDto? Rating = null,
+    DateTime CreatedAt = default
 )
 {
     /// <summary>
