@@ -29,5 +29,21 @@ public class UserMappingProfile : Profile
         CreateMap<UpdateProfileDto, Domain.Entities.User>()
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+        // Address mappings
+        CreateMap<Domain.Entities.Address, AddressDto>()
+            .ForMember(dest => dest.FullAddress, opt => opt.MapFrom(src => src.FullAddress));
+
+        CreateMap<CreateAddressDto, Domain.Entities.Address>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<UpdateAddressDto, Domain.Entities.Address>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
     }
 }

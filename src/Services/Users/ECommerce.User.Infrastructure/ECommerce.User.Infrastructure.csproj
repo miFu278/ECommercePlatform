@@ -3,10 +3,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ECommerce.User.Domain\ECommerce.User.Domain.csproj" />
     <ProjectReference Include="..\ECommerce.User.Application\ECommerce.User.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\ECommerce.Shared.Abstractions\ECommerce.Shared.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
