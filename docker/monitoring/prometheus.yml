@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # API Gateway metrics
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['host.docker.internal:5050']
+    metrics_path: '/metrics'
+    
+  # User Service metrics (nếu có)
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+    metrics_path: '/metrics'
+    
+  # Product Service metrics (nếu có)
+  - job_name: 'product-service'
+    static_configs:
+      - targets: ['host.docker.internal:5010']
+    metrics_path: '/metrics'
