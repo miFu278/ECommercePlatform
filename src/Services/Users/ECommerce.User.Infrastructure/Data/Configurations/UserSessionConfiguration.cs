@@ -37,5 +37,8 @@ public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
         // Ignore computed properties
         builder.Ignore(s => s.IsExpired);
         builder.Ignore(s => s.IsValid);
+        
+        // Session không cần UpdatedAt vì chỉ tạo và xóa, không update
+        builder.Ignore(s => s.UpdatedAt);
     }
 }

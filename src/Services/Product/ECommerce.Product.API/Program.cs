@@ -1,8 +1,11 @@
+using ECommerce.Product.Application.Validators;
 using ECommerce.Product.Domain.Interfaces;
 using ECommerce.Product.Infrastructure.Data;
 using ECommerce.Product.Infrastructure.Repositories;
 using ECommerce.Product.Infrastructure.Services;
 using ECommerce.Shared.Abstractions.Interceptors;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 namespace ECommerce.Product.API
 {
@@ -15,6 +18,10 @@ namespace ECommerce.Product.API
             // Add services to the container.
             builder.Services.AddControllers();
             
+            // FluentValidation
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateProductDtoValidator>();
+            
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(ECommerce.Product.Application.Mappings.ProductMappingProfile));
 
@@ -26,7 +33,7 @@ namespace ECommerce.Product.API
                 {
                     Title = "ECommerce Product Service API",
                     Version = "v1",
-                    Description = "Product Catalog API with MongoDB - Manage products, categories, and tags",
+                    Description = "Product Catalog API with MongoDB - Manage products, categories, and tags with advanced search and filtering",
                     Contact = new Microsoft.OpenApi.Models.OpenApiContact
                     {
                         Name = "ECommerce Platform",
@@ -70,6 +77,17 @@ namespace ECommerce.Product.API
             builder.Services.AddScoped<ECommerce.Product.Application.Interfaces.ICategoryService, ECommerce.Product.Application.Services.CategoryService>();
             builder.Services.AddScoped<ECommerce.Product.Application.Interfaces.ITagService, ECommerce.Product.Application.Services.TagService>();
 
+            // CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -80,14 +98,14 @@ namespace ECommerce.Product.API
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Product API v1");
                     options.RoutePrefix = string.Empty; // Swagger at root URL
+                    options.DocumentTitle = "ECommerce Product Service API";
+                    options.DefaultModelsExpandDepth(-1); // Hide schemas section by default
                 });
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowAll");
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();

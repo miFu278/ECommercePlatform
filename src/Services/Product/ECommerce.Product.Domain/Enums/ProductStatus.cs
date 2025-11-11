@@ -4,6 +4,8 @@
     {
         Draft = 0,
         Active = 1,
-        Archived = 2
+        LowStock = 2,
+        OutOfStock = 3,
+        Archived = 4
     }
 }

@@ -40,7 +40,7 @@ public class UserService : IUserService
             throw new NotFoundException("User not found");
 
         // Check if username is being changed and if it's already taken
-        if (!string.IsNullOrEmpty(dto.Username) && dto.Username != user.Username)
+        if (!string.IsNullOrWhiteSpace(dto.Username) && dto.Username != user.Username)
         {
             var existingUser = await _unitOfWork.Users.GetByUsernameAsync(dto.Username, cancellationToken);
             if (existingUser != null)
@@ -49,11 +49,19 @@ public class UserService : IUserService
             user.Username = dto.Username;
         }
 
-        // Update user properties
-        user.FirstName = dto.FirstName;
-        user.LastName = dto.LastName;
-        user.PhoneNumber = dto.PhoneNumber;
-        user.DateOfBirth = dto.DateOfBirth;
+        // Chỉ update những field có giá trị (không null)
+        if (dto.FirstName != null)
+            user.FirstName = dto.FirstName;
+            
+        if (dto.LastName != null)
+            user.LastName = dto.LastName;
+            
+        if (dto.PhoneNumber != null)
+            user.PhoneNumber = dto.PhoneNumber;
+            
+        if (dto.DateOfBirth.HasValue)
+            user.DateOfBirth = dto.DateOfBirth;
+
         user.UpdatedAt = DateTime.UtcNow;
 
         _unitOfWork.Users.Update(user);

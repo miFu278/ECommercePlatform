@@ -10,6 +10,17 @@ public class ProductMappingProfile : Profile
     {
         // Product mappings
         CreateMap<Domain.Entities.Product, ProductDto>();
+        
+        CreateMap<Domain.Entities.Product, ProductListDto>()
+            .ForMember(dest => dest.PrimaryImageUrl, opt => opt.MapFrom(src => 
+                src.Images.FirstOrDefault(i => i.IsPrimary) != null 
+                    ? src.Images.First(i => i.IsPrimary).Url 
+                    : src.Images.FirstOrDefault() != null ? src.Images.First().Url : null))
+            .ForMember(dest => dest.InStock, opt => opt.MapFrom(src => 
+                !src.Inventory.TrackInventory || src.Inventory.Stock > 0))
+            .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Inventory.Stock))
+            .ForMember(dest => dest.CategoryName, opt => opt.Ignore()); // Set manually in service
+        
         CreateMap<CreateProductDto, Domain.Entities.Product>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CategoryPath, opt => opt.Ignore())
@@ -51,6 +62,11 @@ public class ProductMappingProfile : Profile
         // Category mappings
         CreateMap<Domain.Entities.Category, CategoryDto>();
         CreateMap<CreateCategoryDto, Domain.Entities.Category>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+        
+        CreateMap<UpdateCategoryDto, Domain.Entities.Category>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());

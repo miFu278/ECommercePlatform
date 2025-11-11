@@ -12,4 +12,7 @@ public class ProductSpecifications
     
     [BsonElement("warranty")]
     public string? Warranty { get; set; }
+    
+    [BsonElement("storage")]
+    public string? Storage { get; set; }
 }

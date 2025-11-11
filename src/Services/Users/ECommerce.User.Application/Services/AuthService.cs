@@ -58,9 +58,7 @@ namespace ECommerce.User.Application
             user.EmailVerificationToken = _tokenService.GenerateEmailVerificationToken();
             user.EmailVerificationTokenExpires = DateTime.UtcNow.AddHours(24);
 
-            // Create user in database
-            await _unitOfWork.Users.AddAsync(user, cancellationToken);
-
+            // Add user role BEFORE adding to database
             user.UserRoles.Add(new Domain.Entities.UserRole
             {
                 UserId = user.Id,
@@ -68,7 +66,8 @@ namespace ECommerce.User.Application
                 AssignedAt = DateTime.UtcNow
             });
 
-            _unitOfWork.Users.Update(user);
+            // Create user in database (with role)
+            await _unitOfWork.Users.AddAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Reload user with roles to ensure navigation properties are loaded
