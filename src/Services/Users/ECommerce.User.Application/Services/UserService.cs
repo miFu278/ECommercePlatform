@@ -8,23 +8,23 @@ namespace ECommerce.User.Application.Services;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IMapper _mapper;
 
     public UserService(
-        IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
         IPasswordHasher passwordHasher,
         IMapper mapper)
     {
-        _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
         _mapper = mapper;
     }
 
     public async Task<UserDto> GetProfileAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         
         if (user == null)
             throw new NotFoundException("User not found");
@@ -34,38 +34,47 @@ public class UserService : IUserService
 
     public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         
         if (user == null)
             throw new NotFoundException("User not found");
 
         // Check if username is being changed and if it's already taken
-        if (!string.IsNullOrEmpty(dto.Username) && dto.Username != user.Username)
+        if (!string.IsNullOrWhiteSpace(dto.Username) && dto.Username != user.Username)
         {
-            var existingUser = await _userRepository.GetByUsernameAsync(dto.Username, cancellationToken);
+            var existingUser = await _unitOfWork.Users.GetByUsernameAsync(dto.Username, cancellationToken);
             if (existingUser != null)
                 throw new BusinessException("Username is already taken", "USERNAME_EXISTS");
             
             user.Username = dto.Username;
         }
 
-        // Update user properties
-        user.FirstName = dto.FirstName;
-        user.LastName = dto.LastName;
-        user.PhoneNumber = dto.PhoneNumber;
-        user.DateOfBirth = dto.DateOfBirth;
+        // Chỉ update những field có giá trị (không null)
+        if (dto.FirstName != null)
+            user.FirstName = dto.FirstName;
+            
+        if (dto.LastName != null)
+            user.LastName = dto.LastName;
+            
+        if (dto.PhoneNumber != null)
+            user.PhoneNumber = dto.PhoneNumber;
+            
+        if (dto.DateOfBirth.HasValue)
+            user.DateOfBirth = dto.DateOfBirth;
+
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Reload to get updated navigation properties
-        var updatedUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var updatedUser = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         return _mapper.Map<UserDto>(updatedUser);
     }
 
     public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         
         if (user == null)
             throw new NotFoundException("User not found");
@@ -88,13 +97,20 @@ public class UserService : IUserService
             session.IsActive = false;
         }
 
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        // Invalidate all sessions for security
+        foreach (var session in user.Sessions)
+        {
+            session.IsActive = false;
+        }
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     public async Task<bool> DeleteAccountAsync(Guid userId, string password, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         
         if (user == null)
             throw new NotFoundException("User not found");
@@ -104,13 +120,15 @@ public class UserService : IUserService
             throw new BusinessException("Password is incorrect", "INVALID_PASSWORD");
 
         // Soft delete
-        await _userRepository.DeleteAsync(userId, cancellationToken);
+        user.DeletedAt = DateTime.UtcNow;
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     public async Task<UserDto> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         
         if (user == null)
             throw new NotFoundException("User not found");
@@ -120,7 +138,7 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserDto>> GetAllUsersAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var users = await _userRepository.GetAllAsync(pageNumber, pageSize, cancellationToken);
+        var users = await _unitOfWork.Users.GetAllAsync(pageNumber, pageSize, cancellationToken);
         return _mapper.Map<IEnumerable<UserDto>>(users);
     }
 }

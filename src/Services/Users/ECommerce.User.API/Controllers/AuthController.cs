@@ -131,6 +131,21 @@ public class AuthController : ControllerBase
         await _authService.ResetPasswordAsync(dto.Email, dto.Token, dto.NewPassword, cancellationToken);
         return Ok(new { message = "Password reset successfully" });
     }
+
+    /// <summary>
+    /// Resend email verification
+    /// </summary>
+    /// <param name="dto">Email address</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message</returns>
+    /// <response code="200">Verification email sent if email exists and not verified</response>
+    [HttpPost("resend-verification-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> ResendEmailVerification([FromBody] ForgotPasswordDto dto, CancellationToken cancellationToken)
+    {
+        await _authService.ResendEmailVerificationAsync(dto.Email, cancellationToken);
+        return Ok(new { message = "If the email exists and is not verified, a verification link has been sent" });
+    }
 }
 
 public record RefreshTokenRequest(string RefreshToken);

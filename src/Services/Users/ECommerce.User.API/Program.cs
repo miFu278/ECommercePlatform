@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+// Fix PostgreSQL DateTime issue - treat DateTimeKind.Unspecified as UTC
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -74,19 +77,30 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 
-// Database
-builder.Services.AddDbContext<UserDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// HttpContextAccessor for CurrentUserService
+builder.Services.AddHttpContextAccessor();
+
+// Database with Audit Interceptor
+builder.Services.AddDbContext<UserDbContext>((serviceProvider, options) =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    
+    // Add audit interceptor for automatic CreatedBy/UpdatedBy population
+    var currentUserService = serviceProvider.GetService<ECommerce.Shared.Abstractions.Interceptors.ICurrentUserService>();
+    options.AddInterceptors(new ECommerce.Shared.Abstractions.Interceptors.AuditableEntityInterceptor(currentUserService));
+});
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 
-// Repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Current User Service (for audit interceptor)
+builder.Services.AddScoped<ECommerce.Shared.Abstractions.Interceptors.ICurrentUserService, CurrentUserService>();
+
+// Unit of Work & Repositories
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IEmailService, EmailService>();
