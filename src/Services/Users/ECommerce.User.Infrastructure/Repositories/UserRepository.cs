@@ -35,6 +35,14 @@ public class UserRepository : Repository<Domain.Entities.User>, IUserRepository
             .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
     }
 
+    public async Task<Domain.Entities.User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+    }
+
     public async Task<IEnumerable<Domain.Entities.User>> GetAllAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         return await _dbSet

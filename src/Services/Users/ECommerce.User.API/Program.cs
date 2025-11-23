@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.RateLimiting;
 using ECommerce.User.API.Middleware;
 using ECommerce.User.Application;
 using ECommerce.User.Application.Interfaces;
@@ -12,6 +14,9 @@ using ECommerce.User.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -21,7 +26,21 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+
+// Configure routing to use lowercase URLs with kebab-case
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
+
+builder.Services.AddControllers(options =>
+{
+    // Convert controller and action names to kebab-case
+    // Example: AuthController -> auth, RefreshToken -> refresh-token
+    options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger/OpenAPI
@@ -84,7 +103,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<UserDbContext>((serviceProvider, options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    
+
     // Add audit interceptor for automatic CreatedBy/UpdatedBy population
     var currentUserService = serviceProvider.GetService<ECommerce.Shared.Abstractions.Interceptors.ICurrentUserService>();
     options.AddInterceptors(new ECommerce.Shared.Abstractions.Interceptors.AuditableEntityInterceptor(currentUserService));
@@ -134,6 +153,67 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    // Global rate limit: 100 requests per minute per IP
+    options.AddFixedWindowLimiter("global", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 5;
+    });
+
+    // Login rate limit: 10 attempts per 5 minutes per IP (prevent brute force)
+    options.AddSlidingWindowLimiter("login", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(5);
+        opt.SegmentsPerWindow = 5;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
+
+    // Register rate limit: 5 registrations per 15 minutes per IP (prevent spam)
+    options.AddFixedWindowLimiter("register", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(15);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+
+    // Password reset rate limit: 3 attempts per 30 minutes per IP
+    options.AddFixedWindowLimiter("password-reset", opt =>
+    {
+        opt.PermitLimit = 3;
+        opt.Window = TimeSpan.FromMinutes(30);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+
+    // Rejection response
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+
+        var retryAfterSeconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)
+            ? (int?)retryAfter.TotalSeconds
+            : null;
+
+        var response = new
+        {
+            message = "Too many requests. Please try again later.",
+            code = "RATE_LIMIT_EXCEEDED",
+            retryAfter = retryAfterSeconds
+        };
+
+        await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+    };
+});
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -163,8 +243,34 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
+// Rate limiting must be after routing and before authentication
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+/// <summary>
+/// Transforms route parameters to lowercase kebab-case format
+/// Example: RefreshToken -> refresh-token, UserProfile -> user-profile
+/// </summary>
+public class SlugifyParameterTransformer : IOutboundParameterTransformer
+{
+    public string? TransformOutbound(object? value)
+    {
+        if (value == null) return null;
+
+        // Convert PascalCase/camelCase to kebab-case
+        // Example: RefreshToken -> refresh-token
+        return Regex.Replace(
+            value.ToString()!,
+            "([a-z])([A-Z])",
+            "$1-$2",
+            RegexOptions.CultureInvariant,
+            TimeSpan.FromMilliseconds(100))
+            .ToLowerInvariant();
+    }
+}
