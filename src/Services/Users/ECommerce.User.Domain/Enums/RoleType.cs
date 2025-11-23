@@ -2,8 +2,8 @@ namespace ECommerce.User.Domain.Enums;
 
 public enum RoleType
 {
-    Guest = 1,
-    Customer = 2,
-    Manager = 3,
-    Admin = 4
+    Admin = 1,      // Full system access
+    Manager = 2,    // Product and order management
+    Customer = 3,   // Standard customer access
+    Guest = 4       // Limited browsing access
 }

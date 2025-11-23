@@ -17,9 +17,9 @@ A scalable, cloud-native e-commerce platform built with .NET 9 microservices arc
 
 | Service | Description | Database | Status |
 |---------|-------------|----------|--------|
-| **User Service** | User management, authentication | PostgreSQL | 🚧 In Progress |
-| **Product Catalog** | Product management, search | MongoDB | 📝 Planned |
-| **Shopping Cart** | Cart management | Redis | 📝 Planned |
+| **User Service** | User management, authentication | PostgreSQL | ✅ Complete (95%) |
+| **Product Catalog** | Product management, search | MongoDB | ✅ Complete (95%) |
+| **Shopping Cart** | Cart management | Redis | ✅ Complete (90%) |
 | **Order Service** | Order processing | PostgreSQL | 📝 Planned |
 | **Payment Service** | Payment processing | PostgreSQL | 📝 Planned |
 | **Notification Service** | Email, SMS notifications | MongoDB | 📝 Planned |
@@ -154,12 +154,23 @@ ECommercePlatform/
 
 ## 📚 Documentation
 
-- [Architecture](docs/architecture.md) - System architecture and design
-- [API Documentation](docs/api-document.md) - API endpoints and examples
-- [Database Design](docs/database-document.md) - Database schemas
-- [Deployment Guide](docs/deployment.md) - Deployment instructions
-- [Hosting Options](docs/hosting-options.md) - Cloud hosting guide
-- [Docker Setup](docker/README.md) - Docker configuration
+### Quick Start
+- [Documentation Index](DOCUMENTATION-INDEX.md) - Complete documentation guide
+- [User Service Guide](docs/services/user-service-complete-implementation.md) - Get started in 5 minutes
+
+### Core Documentation
+- [Architecture](docs/core/architecture.md) - System architecture and design patterns
+- [Project Structure](docs/core/project-structure.md) - Solution organization
+- [Database Design](docs/core/database-document.md) - Database schemas for all services
+
+### API & Deployment
+- [API Documentation](docs/api/api-document.md) - Complete API reference
+- [Deployment Guide](docs/deployment/deployment.md) - Local, Docker, Kubernetes
+- [Hosting Options](docs/deployment/hosting-options.md) - Cloud hosting comparison
+
+### Tools & Guides
+- [CodeRabbit Setup](docs/tools/CODERABBIT_SETUP.md) - AI code review
+- [Testing Guides](docs/guides/) - Testing instructions
 
 ## 🔧 Development
 

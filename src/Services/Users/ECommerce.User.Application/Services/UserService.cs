@@ -49,6 +49,14 @@ public class UserService : IUserService
             user.Username = dto.Username;
         }
 
+        // Check if phone number is being changed and if it's already taken
+        if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && dto.PhoneNumber != user.PhoneNumber)
+        {
+            var existingUser = await _unitOfWork.Users.GetByPhoneNumberAsync(dto.PhoneNumber, cancellationToken);
+            if (existingUser != null)
+                throw new ConflictException("Phone number is already registered", "PHONE_EXISTS");
+        }
+
         // Chỉ update những field có giá trị (không null)
         if (dto.FirstName != null)
             user.FirstName = dto.FirstName;

@@ -36,7 +36,7 @@ namespace ECommerce.User.Application
             // Check if email exists
             if (await _unitOfWork.Users.GetByEmailAsync(dto.Email, cancellationToken) != null)
             {
-                throw new BusinessException("Email already registered", "EMAIL_EXISTS");
+                throw new ConflictException("Email already registered", "EMAIL_EXISTS");
             }
 
             // Check if username exists (if provided)
@@ -44,7 +44,16 @@ namespace ECommerce.User.Application
             {
                 if (await _unitOfWork.Users.GetByUsernameAsync(dto.Username, cancellationToken) != null)
                 {
-                    throw new BusinessException("Username already taken", "USERNAME_EXISTS");
+                    throw new ConflictException("Username already taken", "USERNAME_EXISTS");
+                }
+            }
+
+            // Check if phone number exists (if provided)
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                if (await _unitOfWork.Users.GetByPhoneNumberAsync(dto.PhoneNumber, cancellationToken) != null)
+                {
+                    throw new ConflictException("Phone number already registered", "PHONE_EXISTS");
                 }
             }
 
@@ -62,7 +71,7 @@ namespace ECommerce.User.Application
             user.UserRoles.Add(new Domain.Entities.UserRole
             {
                 UserId = user.Id,
-                RoleId = 3, // Customer role
+                RoleId = (int)Domain.Enums.RoleType.Customer, // Customer role (RoleId = 3)
                 AssignedAt = DateTime.UtcNow
             });
 
@@ -124,6 +133,10 @@ namespace ECommerce.User.Application
             if (!user.IsActive)
                 throw new BusinessException("Account is inactive", "ACCOUNT_INACTIVE");
 
+            // Check if email is verified
+            if (!user.EmailVerified)
+                throw new ForbiddenException("Email is not verified");
+
             // Reset failed attempts on successful login
             user.ResetFailedLoginAttempts();
             _unitOfWork.Users.Update(user);
@@ -163,7 +176,7 @@ namespace ECommerce.User.Application
                 throw new UnauthorizedException("Invalid refresh token");
 
             var session = user.Sessions.FirstOrDefault(s => s.RefreshToken == refreshToken && s.IsValid);
-            
+
             if (session == null)
                 throw new UnauthorizedException("Invalid or expired refresh token");
 
@@ -196,10 +209,10 @@ namespace ECommerce.User.Application
                 return false;
 
             var session = user.Sessions.FirstOrDefault(s => s.RefreshToken == refreshToken);
-            
+
             if (session == null)
                 return false;
-                
+
             session.IsActive = false;
 
             _unitOfWork.Users.Update(user);
