@@ -105,6 +105,12 @@ public class UserService : IUserService
             session.IsActive = false;
         }
 
+        // Invalidate all sessions for security
+        foreach (var session in user.Sessions)
+        {
+            session.IsActive = false;
+        }
+
         _unitOfWork.Users.Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;

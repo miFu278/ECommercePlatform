@@ -95,15 +95,26 @@ namespace ECommerce.User.Application
             if (user == null)
                 throw new UnauthorizedException("Invalid email or password");
 
-            // Check if account is locked
+            // Check if account is locked and auto-unlock if lockout period has expired
             if (user.IsLocked)
             {
-                var remainingTime = user.LockoutEnd.HasValue
-                    ? user.LockoutEnd.Value - DateTime.UtcNow
-                    : TimeSpan.Zero;
-                throw new BusinessException(
-                    $"Account is locked. Try again in {remainingTime.Minutes} minutes.",
-                    "ACCOUNT_LOCKED");
+                if (user.LockoutEnd.HasValue && user.LockoutEnd.Value <= DateTime.UtcNow)
+                {
+                    // Lockout period has expired, auto-unlock the account
+                    user.UnlockAccount();
+                    _unitOfWork.Users.Update(user);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                else
+                {
+                    // Still locked, calculate remaining time
+                    var remainingTime = user.LockoutEnd.HasValue
+                        ? user.LockoutEnd.Value - DateTime.UtcNow
+                        : TimeSpan.Zero;
+                    throw new BusinessException(
+                        $"Account is locked. Try again in {Math.Ceiling(remainingTime.TotalMinutes)} minutes.",
+                        "ACCOUNT_LOCKED");
+                }
             }
             // Verify password
             if (!_passwordHasher.VerifyPassword(dto.Password, user.PasswordHash))
