@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECommerce.Notification.Application\ECommerce.Notification.Application.csproj" />
+    <ProjectReference Include="..\ECommerce.Notification.Infrastructure\ECommerce.Notification.Infrastructure.csproj" />
+    <ProjectReference Include="..\ECommerce.Notification.Domain\ECommerce.Notification.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\ECommerce.EventBus\ECommerce.EventBus.csproj" />
+  </ItemGroup>
+
+</Project>

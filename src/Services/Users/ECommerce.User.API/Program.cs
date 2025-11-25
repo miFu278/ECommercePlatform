@@ -25,6 +25,15 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel for multiple ports
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // REST API (HTTP/1.1)
+    options.ListenLocalhost(5000, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
+    // gRPC (HTTP/2)
+    options.ListenLocalhost(5010, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+});
+
 // Add services to the container
 
 // Configure routing to use lowercase URLs with kebab-case
@@ -40,6 +49,9 @@ builder.Services.AddControllers(options =>
     // Example: AuthController -> auth, RefreshToken -> refresh-token
     options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
 });
+
+// gRPC
+builder.Services.AddGrpc();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -250,6 +262,9 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Map gRPC Service
+app.MapGrpcService<ECommerce.User.API.Grpc.UserGrpcService>();
 
 app.Run();
 

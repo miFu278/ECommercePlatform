@@ -17,6 +17,7 @@ namespace ECommerce.User.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("user")
                 .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -56,7 +57,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -85,7 +86,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -100,7 +101,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("addresses", (string)null);
+                    b.ToTable("addresses", "user");
                 });
 
             modelBuilder.Entity("ECommerce.User.Domain.Entities.AuditLog", b =>
@@ -142,7 +143,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("Timestamp")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("timestamp")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -164,7 +165,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.HasIndex("EntityType", "EntityId");
 
-                    b.ToTable("audit_logs", (string)null);
+                    b.ToTable("audit_logs", "user");
                 });
 
             modelBuilder.Entity("ECommerce.User.Domain.Entities.Role", b =>
@@ -178,7 +179,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -198,7 +199,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("roles", (string)null);
+                    b.ToTable("roles", "user");
 
                     b.HasData(
                         new
@@ -240,16 +241,16 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("date_of_birth");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("deleted_at");
 
                     b.Property<string>("Email")
@@ -264,7 +265,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                         .HasColumnName("email_verification_token");
 
                     b.Property<DateTime?>("EmailVerificationTokenExpires")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("email_verification_token_expires");
 
                     b.Property<bool>("EmailVerified")
@@ -297,7 +298,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                         .HasColumnName("is_locked");
 
                     b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("last_login_at");
 
                     b.Property<string>("LastName")
@@ -306,7 +307,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                         .HasColumnName("last_name");
 
                     b.Property<DateTime?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("lockout_end");
 
                     b.Property<string>("PasswordHash")
@@ -321,7 +322,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                         .HasColumnName("password_reset_token");
 
                     b.Property<DateTime?>("PasswordResetTokenExpires")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("password_reset_token_expires");
 
                     b.Property<string>("PhoneNumber")
@@ -331,7 +332,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -356,7 +357,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("deleted_at IS NULL");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users", "user");
                 });
 
             modelBuilder.Entity("ECommerce.User.Domain.Entities.UserRole", b =>
@@ -371,7 +372,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("AssignedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("assigned_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -385,7 +386,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("user_roles", (string)null);
+                    b.ToTable("user_roles", "user");
                 });
 
             modelBuilder.Entity("ECommerce.User.Domain.Entities.UserSession", b =>
@@ -397,7 +398,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -406,7 +407,7 @@ namespace ECommerce.User.Infrastructure.Migrations
                         .HasColumnName("device_info");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("expires_at");
 
                     b.Property<string>("IpAddress")
@@ -421,7 +422,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.Property<DateTime>("LastAccessedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("last_accessed_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -448,7 +449,7 @@ namespace ECommerce.User.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("user_sessions", (string)null);
+                    b.ToTable("user_sessions", "user");
                 });
 
             modelBuilder.Entity("ECommerce.User.Domain.Entities.Address", b =>

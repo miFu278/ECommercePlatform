@@ -20,6 +20,9 @@ public class UserDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Set default schema for User service
+        modelBuilder.HasDefaultSchema("user");
+
         // Apply all configurations from current assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserDbContext).Assembly);
     }
