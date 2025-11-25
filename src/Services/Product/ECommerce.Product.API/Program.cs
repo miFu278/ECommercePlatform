@@ -15,8 +15,20 @@ namespace ECommerce.Product.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Configure Kestrel for multiple ports
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                // REST API (HTTP/1.1)
+                options.ListenLocalhost(5001, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
+                // gRPC (HTTP/2)
+                options.ListenLocalhost(5011, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+            });
+
             // Add services to the container.
             builder.Services.AddControllers();
+            
+            // gRPC
+            builder.Services.AddGrpc();
             
             // FluentValidation
             builder.Services.AddFluentValidationAutoValidation();
@@ -107,6 +119,9 @@ namespace ECommerce.Product.API
             app.UseCors("AllowAll");
             app.UseAuthorization();
             app.MapControllers();
+            
+            // Map gRPC Service
+            app.MapGrpcService<ECommerce.Product.API.Grpc.ProductGrpcService>();
 
             app.Run();
         }

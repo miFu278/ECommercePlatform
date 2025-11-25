@@ -22,12 +22,23 @@ public class AddressController : ControllerBase
 
     private Guid GetCurrentUserId()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // Try to get from API Gateway header first (trusted)
+        if (Request.Headers.TryGetValue("X-User-Id", out var userIdHeader))
         {
-            throw new UnauthorizedAccessException("User ID not found in token");
+            if (Guid.TryParse(userIdHeader, out var userId))
+            {
+                return userId;
+            }
         }
-        return userId;
+
+        // Fallback to JWT claims (if called directly without Gateway)
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim != null && Guid.TryParse(userIdClaim, out var userIdFromClaim))
+        {
+            return userIdFromClaim;
+        }
+
+        throw new UnauthorizedAccessException("User ID not found");
     }
 
     /// <summary>

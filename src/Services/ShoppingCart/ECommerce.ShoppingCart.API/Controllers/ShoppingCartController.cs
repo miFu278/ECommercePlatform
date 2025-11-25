@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ECommerce.ShoppingCart.Application.DTOs;
 using ECommerce.ShoppingCart.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +22,7 @@ public class ShoppingCartController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<CartDto>> GetCart()
     {
-        // TODO: Get userId from JWT token
         var userId = GetUserId();
-        
         var cart = await _cartService.GetCartAsync(userId);
         if (cart == null)
         {
@@ -110,18 +109,25 @@ public class ShoppingCartController : ControllerBase
         return Ok(new { merged });
     }
 
-    // TODO: Replace with actual JWT authentication
     private Guid GetUserId()
     {
-        // For testing, use header or query parameter
+        // Try to get from API Gateway header first (trusted)
         if (Request.Headers.TryGetValue("X-User-Id", out var userIdHeader))
         {
             if (Guid.TryParse(userIdHeader, out var userId))
+            {
                 return userId;
+            }
         }
 
-        // Default test user
-        return Guid.Parse("00000000-0000-0000-0000-000000000001");
+        // Fallback to JWT claims (if called directly without Gateway)
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim != null && Guid.TryParse(userIdClaim, out var userIdFromClaim))
+        {
+            return userIdFromClaim;
+        }
+
+        throw new UnauthorizedAccessException("User ID not found");
     }
 }
 

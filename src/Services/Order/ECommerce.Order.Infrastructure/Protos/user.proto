@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option csharp_namespace = "ECommerce.User.Grpc";
+
+package user;
+
+// User gRPC Service
+service UserGrpcService {
+  rpc GetUserInfo (UserInfoRequest) returns (UserInfoResponse);
+  rpc ValidateUser (ValidateUserRequest) returns (ValidateUserResponse);
+  rpc GetUserAddresses (UserAddressesRequest) returns (UserAddressesResponse);
+}
+
+// Messages
+message UserInfoRequest {
+  string user_id = 1;
+}
+
+message UserInfoResponse {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string first_name = 4;
+  string last_name = 5;
+  string phone_number = 6;
+  bool is_active = 7;
+  bool is_email_verified = 8;
+}
+
+message ValidateUserRequest {
+  string user_id = 1;
+}
+
+message ValidateUserResponse {
+  bool valid = 1;
+  bool is_active = 2;
+  string message = 3;
+}
+
+message UserAddressesRequest {
+  string user_id = 1;
+}
+
+message UserAddressesResponse {
+  repeated AddressInfo addresses = 1;
+}
+
+message AddressInfo {
+  string id = 1;
+  string full_name = 2;
+  string phone_number = 3;
+  string address_line1 = 4;
+  string address_line2 = 5;
+  string city = 6;
+  string state = 7;
+  string postal_code = 8;
+  string country = 9;
+  bool is_default = 10;
+}
