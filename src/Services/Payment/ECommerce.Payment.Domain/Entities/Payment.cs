@@ -3,7 +3,7 @@ using ECommerce.Shared.Abstractions.Entities;
 
 namespace ECommerce.Payment.Domain.Entities;
 
-public class Payment : AuditableEntity
+public class PaymentEntity : AuditableEntity
 {
     public Guid Id { get; set; }
     public string PaymentNumber { get; set; } = string.Empty;

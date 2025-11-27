@@ -14,5 +14,5 @@ public class PaymentHistory : AuditableEntity
     public DateTime ChangedAt { get; set; }
     
     // Navigation
-    public Payment Payment { get; set; } = null!;
+    public PaymentEntity Payment { get; set; } = null!;
 }

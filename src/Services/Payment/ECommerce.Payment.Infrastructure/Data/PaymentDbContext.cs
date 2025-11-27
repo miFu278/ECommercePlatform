@@ -9,7 +9,7 @@ public class PaymentDbContext : DbContext
     {
     }
 
-    public DbSet<Domain.Entities.Payment> Payments { get; set; }
+    public DbSet<PaymentEntity> Payments { get; set; }
     public DbSet<PaymentHistory> PaymentHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ public class PaymentDbContext : DbContext
         modelBuilder.HasDefaultSchema("payment");
 
         // Payment configuration
-        modelBuilder.Entity<Domain.Entities.Payment>(entity =>
+        modelBuilder.Entity<PaymentEntity>(entity =>
         {
             entity.ToTable("payments");
             entity.HasKey(e => e.Id);

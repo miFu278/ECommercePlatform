@@ -15,28 +15,28 @@ public class PaymentRepository : IPaymentRepository
         _context = context;
     }
 
-    public async Task<Domain.Entities.Payment?> GetByIdAsync(Guid id)
+    public async Task<PaymentEntity?> GetByIdAsync(Guid id)
     {
         return await _context.Payments
             .Include(p => p.History.OrderByDescending(h => h.ChangedAt))
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<Domain.Entities.Payment?> GetByPaymentNumberAsync(string paymentNumber)
+    public async Task<PaymentEntity?> GetByPaymentNumberAsync(string paymentNumber)
     {
         return await _context.Payments
             .Include(p => p.History.OrderByDescending(h => h.ChangedAt))
             .FirstOrDefaultAsync(p => p.PaymentNumber == paymentNumber);
     }
 
-    public async Task<Domain.Entities.Payment?> GetByOrderIdAsync(Guid orderId)
+    public async Task<PaymentEntity?> GetByOrderIdAsync(Guid orderId)
     {
         return await _context.Payments
             .Include(p => p.History.OrderByDescending(h => h.ChangedAt))
             .FirstOrDefaultAsync(p => p.OrderId == orderId);
     }
 
-    public async Task<IEnumerable<Domain.Entities.Payment>> GetByUserIdAsync(Guid userId, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<PaymentEntity>> GetByUserIdAsync(Guid userId, int page = 1, int pageSize = 10)
     {
         return await _context.Payments
             .Where(p => p.UserId == userId)
@@ -46,7 +46,7 @@ public class PaymentRepository : IPaymentRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Domain.Entities.Payment>> GetByStatusAsync(PaymentStatus status, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<PaymentEntity>> GetByStatusAsync(PaymentStatus status, int page = 1, int pageSize = 10)
     {
         return await _context.Payments
             .Where(p => p.Status == status)
@@ -66,13 +66,13 @@ public class PaymentRepository : IPaymentRepository
         return await _context.Payments.CountAsync(p => p.UserId == userId);
     }
 
-    public async Task<Domain.Entities.Payment> CreateAsync(Domain.Entities.Payment payment)
+    public async Task<PaymentEntity> CreateAsync(PaymentEntity payment)
     {
         await _context.Payments.AddAsync(payment);
         return payment;
     }
 
-    public Task UpdateAsync(Domain.Entities.Payment payment)
+    public Task UpdateAsync(PaymentEntity payment)
     {
         _context.Payments.Update(payment);
         return Task.CompletedTask;

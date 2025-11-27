@@ -38,7 +38,7 @@ public class PaymentService : IPaymentService
         var orderNumber = $"ORD{DateTime.UtcNow:yyyyMMdd}-0001";
         var amount = 100000m; // 100,000 VND
 
-        var payment = new Domain.Entities.Payment
+        var payment = new Domain.Entities.PaymentEntity
         {
             Id = Guid.NewGuid(),
             PaymentNumber = await _unitOfWork.Payments.GeneratePaymentNumberAsync(),
@@ -137,7 +137,7 @@ public class PaymentService : IPaymentService
         await _unitOfWork.SaveChangesAsync();
 
         // Publish event
-        _eventBus.Publish(new PaymentCompletedEvent
+        await _eventBus.PublishAsync(new PaymentCompletedEvent
         {
             PaymentId = payment.Id,
             OrderId = payment.OrderId,
