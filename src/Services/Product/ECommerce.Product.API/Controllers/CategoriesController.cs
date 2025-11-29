@@ -119,4 +119,22 @@ public class CategoriesController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Seed initial categories (Development only)
+    /// </summary>
+    [HttpPost("seed")]
+    public async Task<ActionResult> SeedCategories([FromServices] ECommerce.Product.Infrastructure.Data.IMongoDbContext context)
+    {
+        try
+        {
+            var seeder = new ECommerce.Product.Infrastructure.Data.CategorySeeder(context);
+            await seeder.SeedAsync();
+            return Ok(new { message = "Categories seeded successfully" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

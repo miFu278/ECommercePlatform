@@ -4,6 +4,7 @@ public interface ICategoryRepository
 {
     Task<IEnumerable<Entities.Category>> GetAllAsync();
     Task<Entities.Category?> GetByIdAsync(string id);
+    Task<IEnumerable<Entities.Category>> GetByIdsAsync(IEnumerable<string> ids);
     Task<IEnumerable<Entities.Category>> GetRootCategoriesAsync();
     Task<IEnumerable<Entities.Category>> GetChildCategoriesAsync(string parentId);
     Task<Entities.Category> CreateAsync(Entities.Category category);

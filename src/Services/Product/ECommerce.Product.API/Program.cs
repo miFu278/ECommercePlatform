@@ -84,6 +84,16 @@ namespace ECommerce.Product.API
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ITagRepository, TagRepository>();
 
+            // Cloudinary Configuration
+            var cloudinarySettings = new ECommerce.Product.Infrastructure.Configuration.CloudinarySettings
+            {
+                CloudName = builder.Configuration["Cloudinary:CloudName"] ?? "",
+                ApiKey = builder.Configuration["Cloudinary:ApiKey"] ?? "",
+                ApiSecret = builder.Configuration["Cloudinary:ApiSecret"] ?? ""
+            };
+            builder.Services.AddSingleton(cloudinarySettings);
+            builder.Services.AddScoped<IImageService, ECommerce.Product.Infrastructure.Services.CloudinaryImageService>();
+
             // Application Services
             builder.Services.AddScoped<ECommerce.Product.Application.Interfaces.IProductService, ECommerce.Product.Application.Services.ProductService>();
             builder.Services.AddScoped<ECommerce.Product.Application.Interfaces.ICategoryService, ECommerce.Product.Application.Services.CategoryService>();

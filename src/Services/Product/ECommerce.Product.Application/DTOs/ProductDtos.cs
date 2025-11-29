@@ -7,26 +7,27 @@ public record ProductDto(
     string Sku,
     string Name,
     string Slug,
-    string ShortDescription,
+    string Description,
     string LongDescription,
     decimal Price,
     decimal? CompareAtPrice,
     decimal CostPrice,
+    int Stock,
+    int LowStockThreshold,
+    bool TrackInventory,
     string CategoryId,
     List<string> CategoryPath,
+    string? BrandId,
+    string? BrandName,
     List<ProductImageDto> Images,
-    List<string> TagIds,
     List<ProductAttributeDto> Attributes,
     ProductSpecificationsDto? Specifications,
+    ProductSeoDto? Seo,
     ProductStatus Status,
-    bool IsActive,
     bool IsFeatured,
     bool IsPublished,
     DateTime? PublishedAt,
-    ProductSeoDto? Seo,
-    ProductInventoryDto Inventory,
-    decimal Weight,
-    ProductDimensionsDto? Dimensions,
+    List<string> Tags,
     ProductRatingDto? Rating,
     DateTime CreatedAt,
     DateTime UpdatedAt
@@ -36,43 +37,47 @@ public record CreateProductDto(
     string Sku,
     string Name,
     string Slug,
-    string ShortDescription,
+    string Description,
     string LongDescription,
     decimal Price,
     decimal? CompareAtPrice,
     decimal CostPrice,
+    int Stock,
+    int LowStockThreshold,
+    bool TrackInventory,
     string CategoryId,
-    List<string>? TagIds,
+    string? BrandId,
+    string? BrandName,
     List<ProductImageDto>? Images,
     List<ProductAttributeDto>? Attributes,
     ProductSpecificationsDto? Specifications,
     ProductSeoDto? Seo,
-    ProductInventoryDto Inventory,
-    bool IsActive,
     bool IsFeatured,
-    decimal Weight,
-    ProductDimensionsDto? Dimensions
+    List<string>? Tags
 );
+
 
 public record UpdateProductDto(
     string Name,
     string Slug,
-    string ShortDescription,
+    string Description,
     string LongDescription,
     decimal Price,
     decimal? CompareAtPrice,
     decimal CostPrice,
+    int Stock,
+    int LowStockThreshold,
+    bool TrackInventory,
     string CategoryId,
-    List<string>? TagIds,
+    string? BrandId,
+    string? BrandName,
     List<ProductImageDto>? Images,
     List<ProductAttributeDto>? Attributes,
     ProductSpecificationsDto? Specifications,
     ProductSeoDto? Seo,
-    ProductInventoryDto Inventory,
-    bool IsActive,
+    ProductStatus Status,
     bool IsFeatured,
-    decimal Weight,
-    ProductDimensionsDto? Dimensions
+    List<string>? Tags
 );
 
 // Nested DTOs
@@ -92,9 +97,49 @@ public record ProductAttributeDto
 
 public record ProductSpecificationsDto
 {
-    public string? Brand { get; init; }
+    // General
     public string? Model { get; init; }
+    public string? Weight { get; init; }
+    public ProductDimensionsDto? Dimensions { get; init; }
     public string? Warranty { get; init; }
+
+    // CPU
+    public string? SocketType { get; init; }
+    public int? CoreCount { get; init; }
+    public int? ThreadCount { get; init; }
+    public decimal? BaseClockGhz { get; init; }
+    public decimal? BoostClockGhz { get; init; }
+    public int? TdpW { get; init; }
+
+    // GPU
+    public int? VramGb { get; init; }
+    public string? GpuChipset { get; init; }
+
+    // Monitor
+    public int? RefreshRateHz { get; init; }
+    public decimal? ScreenSizeInch { get; init; }
+    public string? PanelType { get; init; }
+    public string? Resolution { get; init; }
+
+    // Storage/RAM
+    public int? CapacityGb { get; init; }
+    public string? MemoryType { get; init; }
+    public int? MemorySpeedMhz { get; init; }
+
+    // Mainboard
+    public string? Chipset { get; init; }
+    public string? FormFactor { get; init; }
+    public int? MemorySlots { get; init; }
+
+    // PSU
+    public int? Wattage { get; init; }
+    public string? EfficiencyRating { get; init; }
+    public string? Modular { get; init; }
+
+    // Case
+    public string? CaseType { get; init; }
+    public int? MaxGpuLengthMm { get; init; }
+    public int? MaxCoolerHeightMm { get; init; }
 }
 
 public record ProductSeoDto
@@ -102,14 +147,6 @@ public record ProductSeoDto
     public string? MetaTitle { get; init; }
     public string? MetaDescription { get; init; }
     public List<string>? MetaKeywords { get; init; }
-}
-
-public record ProductInventoryDto
-{
-    public int Stock { get; init; }
-    public int LowStockThreshold { get; init; }
-    public bool TrackInventory { get; init; }
-    public bool AllowBackorder { get; init; }
 }
 
 public record ProductDimensionsDto

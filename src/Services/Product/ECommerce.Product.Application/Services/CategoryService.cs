@@ -45,24 +45,30 @@ public class CategoryService : ICategoryService
         if (await _categoryRepository.ExistsBySlugAsync(dto.Slug))
             throw new InvalidOperationException("Category with this slug already exists");
 
-        var category = new Domain.Entities.Category
+        var category = _mapper.Map<Domain.Entities.Category>(dto);
+        category.CreatedAt = DateTime.UtcNow;
+        category.UpdatedAt = DateTime.UtcNow;
+
+        // Calculate level and path based on parent
+        if (!string.IsNullOrEmpty(dto.ParentId))
         {
-            Name = dto.Name,
-            Slug = dto.Slug,
-            Description = dto.Description,
-            ParentId = dto.ParentId,
-            ImageUrl = dto.ImageUrl,
-            DisplayOrder = dto.DisplayOrder,
-            IsVisible = dto.IsVisible,
-            MetaTitle = dto.MetaTitle,
-            MetaDescription = dto.MetaDescription,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+            var parent = await _categoryRepository.GetByIdAsync(dto.ParentId);
+            if (parent != null)
+            {
+                category.Level = parent.Level + 1;
+                category.Path = new List<string>(parent.Path) { parent.Id! };
+            }
+        }
+        else
+        {
+            category.Level = 0;
+            category.Path = new List<string>();
+        }
 
         await _categoryRepository.CreateAsync(category);
         return _mapper.Map<CategoryDto>(category);
     }
+
 
     public async Task<CategoryDto> UpdateAsync(string id, UpdateCategoryDto dto)
     {
@@ -73,16 +79,27 @@ public class CategoryService : ICategoryService
         if (dto.Slug != category.Slug && await _categoryRepository.ExistsBySlugAsync(dto.Slug, id))
             throw new InvalidOperationException("Category with this slug already exists");
 
-        category.Name = dto.Name;
-        category.Slug = dto.Slug;
-        category.Description = dto.Description;
-        category.ParentId = dto.ParentId;
-        category.ImageUrl = dto.ImageUrl;
-        category.DisplayOrder = dto.DisplayOrder;
-        category.IsVisible = dto.IsVisible;
-        category.MetaTitle = dto.MetaTitle;
-        category.MetaDescription = dto.MetaDescription;
+        _mapper.Map(dto, category);
         category.UpdatedAt = DateTime.UtcNow;
+
+        // Recalculate level and path if parent changed
+        if (dto.ParentId != category.ParentId)
+        {
+            if (!string.IsNullOrEmpty(dto.ParentId))
+            {
+                var parent = await _categoryRepository.GetByIdAsync(dto.ParentId);
+                if (parent != null)
+                {
+                    category.Level = parent.Level + 1;
+                    category.Path = new List<string>(parent.Path) { parent.Id! };
+                }
+            }
+            else
+            {
+                category.Level = 0;
+                category.Path = new List<string>();
+            }
+        }
 
         await _categoryRepository.UpdateAsync(id, category);
         return _mapper.Map<CategoryDto>(category);
@@ -94,7 +111,6 @@ public class CategoryService : ICategoryService
         if (category == null)
             throw new KeyNotFoundException("Category not found");
 
-        // Business rule: Cannot delete category with children
         var children = await _categoryRepository.GetChildCategoriesAsync(id);
         if (children.Any())
             throw new InvalidOperationException("Cannot delete category with children");

@@ -31,27 +31,50 @@ namespace ECommerce.User.Application
             _emailService = emailService;
             _mapper = mapper;
         }
+
         public async Task<UserDto> RegisterAsync(RegisterDto dto, CancellationToken cancellationToken = default)
         {
-            // Check if email exists
-            if (await _unitOfWork.Users.GetByEmailAsync(dto.Email, cancellationToken) != null)
-            {
-                throw new ConflictException("Email already registered", "EMAIL_EXISTS");
-            }
+            //// Check if email exists
+            //if (await _unitOfWork.Users.GetByEmailAsync(dto.Email, cancellationToken) != null)
+            //{
+            //    throw new ConflictException("Email already registered", "EMAIL_EXISTS");
+            //}
 
-            // Check if username exists (if provided)
-            if (!string.IsNullOrEmpty(dto.Username))
+            //// Check if username exists (if provided)
+            //if (!string.IsNullOrEmpty(dto.Username))
+            //{
+            //    if (await _unitOfWork.Users.GetByUsernameAsync(dto.Username, cancellationToken) != null)
+            //    {
+            //        throw new ConflictException("Username already taken", "USERNAME_EXISTS");
+            //    }
+            //}
+
+            //// Check if phone number exists (if provided)
+            //if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            //{
+            //    if (await _unitOfWork.Users.GetByPhoneNumberAsync(dto.PhoneNumber, cancellationToken) != null)
+            //    {
+            //        throw new ConflictException("Phone number already registered", "PHONE_EXISTS");
+            //    }
+            //}
+
+            var existingUser = await _unitOfWork.Users.CheckUniquenessAsync(
+                dto.Email,
+                dto.Username ?? string.Empty,
+                dto.PhoneNumber ?? string.Empty,
+                cancellationToken);
+
+            if (existingUser != null)
             {
-                if (await _unitOfWork.Users.GetByUsernameAsync(dto.Username, cancellationToken) != null)
+                if (existingUser.Email == dto.Email)
+                {
+                    throw new ConflictException("Email already registered", "EMAIL_EXISTS");
+                }
+                if (!string.IsNullOrEmpty(dto.Username) && existingUser.Username == dto.Username)
                 {
                     throw new ConflictException("Username already taken", "USERNAME_EXISTS");
                 }
-            }
-
-            // Check if phone number exists (if provided)
-            if (!string.IsNullOrEmpty(dto.PhoneNumber))
-            {
-                if (await _unitOfWork.Users.GetByPhoneNumberAsync(dto.PhoneNumber, cancellationToken) != null)
+                if (!string.IsNullOrEmpty(dto.PhoneNumber) && existingUser.PhoneNumber == dto.PhoneNumber)
                 {
                     throw new ConflictException("Phone number already registered", "PHONE_EXISTS");
                 }
@@ -145,6 +168,23 @@ namespace ECommerce.User.Application
             // Generate tokens
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
+
+            // Limit active sessions (max 5 per user)
+            const int MaxActiveSessions = 5;
+            var activeSessions = user.Sessions
+                .Where(s => s.IsValid)
+                .OrderBy(s => s.CreatedAt)
+                .ToList();
+
+            if (activeSessions.Count >= MaxActiveSessions)
+            {
+                // Deactivate oldest session(s) to make room
+                var sessionsToDeactivate = activeSessions.Take(activeSessions.Count - MaxActiveSessions + 1);
+                foreach (var oldSession in sessionsToDeactivate)
+                {
+                    oldSession.IsActive = false;
+                }
+            }
 
             // Save refresh token
             var session = new UserSession

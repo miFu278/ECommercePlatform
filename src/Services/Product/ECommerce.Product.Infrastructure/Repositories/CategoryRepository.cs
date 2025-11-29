@@ -10,6 +10,12 @@ public class CategoryRepository : MongoRepository<Domain.Entities.Category>, ICa
     {
     }
 
+    public async Task<IEnumerable<Domain.Entities.Category>> GetByIdsAsync(IEnumerable<string> ids)
+    {
+        var filter = Builders<Domain.Entities.Category>.Filter.In(c => c.Id, ids);
+        return await FindAsync(filter);
+    }
+
     public async Task<IEnumerable<Domain.Entities.Category>> GetRootCategoriesAsync()
     {
         return await FindAsync(c => c.ParentId == null);

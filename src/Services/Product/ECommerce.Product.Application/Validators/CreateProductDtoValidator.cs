@@ -21,9 +21,9 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
             .Matches(@"^[a-z0-9]+(?:-[a-z0-9]+)*$")
             .WithMessage("Slug must be lowercase alphanumeric with hyphens only");
 
-        RuleFor(x => x.ShortDescription)
-            .NotEmpty().WithMessage("Short description is required")
-            .MaximumLength(500).WithMessage("Short description must not exceed 500 characters");
+        RuleFor(x => x.Description)
+            .NotEmpty().WithMessage("Description is required")
+            .MaximumLength(500).WithMessage("Description must not exceed 500 characters");
 
         RuleFor(x => x.LongDescription)
             .NotEmpty().WithMessage("Long description is required")
@@ -43,30 +43,14 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
         RuleFor(x => x.CategoryId)
             .NotEmpty().WithMessage("Category is required");
 
-        RuleFor(x => x.Weight)
-            .GreaterThan(0).WithMessage("Weight must be greater than 0");
+        RuleFor(x => x.Stock)
+            .GreaterThanOrEqualTo(0).WithMessage("Stock must be greater than or equal to 0");
 
-        RuleFor(x => x.Inventory)
-            .NotNull().WithMessage("Inventory information is required");
-
-        RuleFor(x => x.Inventory.Stock)
-            .GreaterThanOrEqualTo(0)
-            .When(x => x.Inventory != null)
-            .WithMessage("Stock must be greater than or equal to 0");
-
-        RuleFor(x => x.Inventory.LowStockThreshold)
-            .GreaterThanOrEqualTo(0)
-            .When(x => x.Inventory != null)
-            .WithMessage("Low stock threshold must be greater than or equal to 0");
+        RuleFor(x => x.LowStockThreshold)
+            .GreaterThanOrEqualTo(0).WithMessage("Low stock threshold must be greater than or equal to 0");
 
         RuleFor(x => x.Images)
-            .Must(images => images == null || images.Any(i => i.IsPrimary))
-            .When(x => x.Images != null && x.Images.Any())
+            .Must(images => images == null || images.Count == 0 || images.Any(i => i.IsPrimary))
             .WithMessage("At least one image must be marked as primary");
-
-        RuleFor(x => x.Dimensions)
-            .Must(d => d!.Length > 0 && d.Width > 0 && d.Height > 0)
-            .When(x => x.Dimensions != null)
-            .WithMessage("All dimensions must be greater than 0");
     }
 }

@@ -6,11 +6,14 @@ public record CategoryDto(
     string Slug,
     string? Description,
     string? ParentId,
-    string? ImageUrl,
-    int DisplayOrder,
-    bool IsVisible,
-    string? MetaTitle,
-    string? MetaDescription,
+    int Level,
+    List<string> Path,
+    string? Image,
+    string? Icon,
+    int Order,
+    bool IsActive,
+    List<CategoryFilterMetaDto> FilterMeta,
+    CategorySeoDto? Seo,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
@@ -20,11 +23,12 @@ public record CreateCategoryDto(
     string Slug,
     string? Description,
     string? ParentId,
-    string? ImageUrl,
-    int DisplayOrder,
-    bool IsVisible,
-    string? MetaTitle,
-    string? MetaDescription
+    string? Image,
+    string? Icon,
+    int Order,
+    bool IsActive,
+    List<CategoryFilterMetaDto>? FilterMeta,
+    CategorySeoDto? Seo
 );
 
 public record UpdateCategoryDto(
@@ -32,9 +36,23 @@ public record UpdateCategoryDto(
     string Slug,
     string? Description,
     string? ParentId,
-    string? ImageUrl,
-    int DisplayOrder,
-    bool IsVisible,
-    string? MetaTitle,
-    string? MetaDescription
+    string? Image,
+    string? Icon,
+    int Order,
+    bool IsActive,
+    List<CategoryFilterMetaDto>? FilterMeta,
+    CategorySeoDto? Seo
 );
+
+public record CategoryFilterMetaDto
+{
+    public string FieldName { get; init; } = string.Empty;
+    public string DisplayName { get; init; } = string.Empty;
+    public List<string> ValueOptions { get; init; } = new();
+}
+
+public record CategorySeoDto
+{
+    public string? MetaTitle { get; init; }
+    public string? MetaDescription { get; init; }
+}

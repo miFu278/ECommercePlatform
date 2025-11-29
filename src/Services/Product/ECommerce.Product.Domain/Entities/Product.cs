@@ -4,124 +4,113 @@ using ECommerce.Product.Domain.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ECommerce.Product.Domain.Entities
+namespace ECommerce.Product.Domain.Entities;
+
+[BsonCollection("products")]
+public class Product
 {
-    [BsonCollection("products")]
-    public class Product
-    {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-        
-        // Identity
-        [BsonElement("sku")]
-        public string Sku { get; set; } = string.Empty;
-        
-        [BsonElement("name")]
-        public string Name { get; set; } = string.Empty;
-        
-        [BsonElement("slug")]
-        public string Slug { get; set; } = string.Empty;
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
 
-        // Description
-        [BsonElement("shortDescription")]
-        public string ShortDescription { get; set; } = string.Empty;
-        
-        [BsonElement("longDescription")]
-        public string LongDescription { get; set; } = string.Empty;
+    [BsonElement("sku")]
+    public string Sku { get; set; } = string.Empty;
 
-        // Pricing
-        [BsonElement("price")]
-        public decimal Price { get; set; }
-        
-        [BsonElement("compareAtPrice")]
-        public decimal? CompareAtPrice { get; set; }
-        
-        [BsonElement("costPrice")]
-        public decimal CostPrice { get; set; }
+    [BsonElement("name")]
+    public string Name { get; set; } = string.Empty;
 
-        // Category
-        [BsonElement("categoryId")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string CategoryId { get; set; } = string.Empty;
-        
-        [BsonElement("categoryPath")]
-        public List<string> CategoryPath { get; set; } = new();
+    [BsonElement("slug")]
+    public string Slug { get; set; } = string.Empty;
 
-        // Images
-        [BsonElement("images")]
-        public List<ProductImage> Images { get; set; } = new();
+    [BsonElement("description")]
+    public string Description { get; set; } = string.Empty;
 
-        // Tags
-        [BsonElement("tagIds")]
-        public List<string> TagIds { get; set; } = new();
+    [BsonElement("long_description")]
+    public string LongDescription { get; set; } = string.Empty;
 
-        // Attributes (for variants like color, size)
-        [BsonElement("attributes")]
-        public List<ProductAttribute> Attributes { get; set; } = new();
+    // Pricing
+    [BsonElement("price")]
+    [BsonRepresentation(BsonType.Decimal128)]
+    public decimal Price { get; set; }
 
-        // Specifications
-        [BsonElement("specifications")]
-        public ProductSpecifications? Specifications { get; set; }
+    [BsonElement("compare_at_price")]
+    [BsonRepresentation(BsonType.Decimal128)]
+    public decimal? CompareAtPrice { get; set; }
 
-        // Status 
-        [BsonElement("status")]
-        [BsonRepresentation(BsonType.String)]
-        public ProductStatus Status { get; set; }
-        
-        [BsonElement("isActive")]
-        public bool IsActive { get; set; }
-        
-        [BsonElement("isFeatured")]
-        public bool IsFeatured { get; set; }
-        
-        [BsonElement("isPublished")]
-        public bool IsPublished { get; set; }
-        
-        [BsonElement("publishedAt")]
-        public DateTime? PublishedAt { get; set; }
+    [BsonElement("cost_price")]
+    [BsonRepresentation(BsonType.Decimal128)]
+    public decimal CostPrice { get; set; }
 
-        // SEO
-        [BsonElement("seo")]
-        public ProductSeo? Seo { get; set; }
+    // Inventory (flattened)
+    [BsonElement("stock")]
+    public int Stock { get; set; }
 
-        // Inventory
-        [BsonElement("inventory")]
-        public ProductInventory Inventory { get; set; } = new();
+    [BsonElement("low_stock_threshold")]
+    public int LowStockThreshold { get; set; }
 
-        // Dimensions
-        [BsonElement("weight")]
-        public decimal Weight { get; set; }
-        
-        [BsonElement("dimensions")]
-        public ProductDimensions? Dimensions { get; set; }
+    [BsonElement("track_inventory")]
+    public bool TrackInventory { get; set; }
 
-        // Rating (calculated from reviews)
-        [BsonElement("rating")]
-        public ProductRating? Rating { get; set; }
+    // Category & Brand
+    [BsonElement("category_id")]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string CategoryId { get; set; } = string.Empty;
 
-        // Audit
-        [BsonElement("createdBy")]
-        public string? CreatedBy { get; set; }
-        
-        [BsonElement("updatedBy")]
-        public string? UpdatedBy { get; set; }
-        
-        [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        
-        [BsonElement("updatedAt")]
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-        
-        // Soft Delete
-        [BsonElement("deletedAt")]
-        public DateTime? DeletedAt { get; set; }
-        
-        [BsonElement("isDeleted")]
-        public bool IsDeleted { get; set; }
-    }
+    [BsonElement("category_path")]
+    public List<string> CategoryPath { get; set; } = new();
+
+    [BsonElement("brand_id")]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? BrandId { get; set; }
+
+    [BsonElement("brand_name")]
+    public string? BrandName { get; set; }
+
+    // Images
+    [BsonElement("images")]
+    public List<ProductImage> Images { get; set; } = new();
+
+    // Attributes (for variants)
+    [BsonElement("attributes")]
+    public List<ProductAttribute> Attributes { get; set; } = new();
+
+    // Specifications (PC components specs)
+    [BsonElement("specifications")]
+    public ProductSpecifications? Specifications { get; set; }
+
+    // SEO
+    [BsonElement("seo")]
+    public ProductSeo? Seo { get; set; }
+
+    // Status & Marketing
+    [BsonElement("status")]
+    [BsonRepresentation(BsonType.String)]
+    public ProductStatus Status { get; set; } = ProductStatus.Draft;
+
+    [BsonElement("is_featured")]
+    public bool IsFeatured { get; set; }
+
+    [BsonElement("is_published")]
+    public bool IsPublished { get; set; }
+
+    [BsonElement("published_at")]
+    public DateTime? PublishedAt { get; set; }
+
+    // Tags (string array instead of ObjectId references)
+    [BsonElement("tags")]
+    public List<string> Tags { get; set; } = new();
+
+    // Rating (denormalized from reviews)
+    [BsonElement("rating")]
+    public ProductRating? Rating { get; set; }
+
+    // Timestamps
+    [BsonElement("created_at")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("updated_at")]
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
 }
-
-
-
-

@@ -4,6 +4,7 @@ namespace ECommerce.User.Domain.Interfaces;
 
 public interface IUserRepository : IRepository<Entities.User>
 {
+    Task<Entities.User?> CheckUniquenessAsync(string email, string username, string phoneNumber, CancellationToken cancellation = default);
     Task<Entities.User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<Entities.User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
     Task<Entities.User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);

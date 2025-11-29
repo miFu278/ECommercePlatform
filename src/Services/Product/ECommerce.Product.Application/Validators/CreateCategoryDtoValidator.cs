@@ -18,10 +18,9 @@ public class CreateCategoryDtoValidator : AbstractValidator<CreateCategoryDto>
             .WithMessage("Slug must be lowercase alphanumeric with hyphens only");
 
         RuleFor(x => x.Description)
-            .MaximumLength(500).WithMessage("Description must not exceed 500 characters")
-            .When(x => !string.IsNullOrEmpty(x.Description));
+            .MaximumLength(500).WithMessage("Description must not exceed 500 characters");
 
-        RuleFor(x => x.DisplayOrder)
-            .GreaterThanOrEqualTo(0).WithMessage("Display order must be greater than or equal to 0");
+        RuleFor(x => x.Order)
+            .GreaterThanOrEqualTo(0).WithMessage("Order must be greater than or equal to 0");
     }
 }

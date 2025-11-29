@@ -1,4 +1,5 @@
 using ECommerce.Product.Application.Interfaces;
+using ECommerce.Product.Domain.Enums;
 using ECommerce.Product.Grpc;
 using Grpc.Core;
 
@@ -32,8 +33,8 @@ public class ProductGrpcService : Product.Grpc.ProductGrpcService.ProductGrpcSer
             Name = product.Name,
             Sku = product.Sku,
             Price = (double)product.Price,
-            StockQuantity = product.Inventory.Stock,
-            IsAvailable = product.IsActive && product.IsPublished && product.Inventory.Stock > 0,
+            StockQuantity = product.Stock,
+            IsAvailable = product.Status == ProductStatus.Active && product.IsPublished && product.Stock > 0,
             ImageUrl = product.Images?.FirstOrDefault()?.Url ?? "",
             Currency = "VND"
         };
@@ -56,8 +57,8 @@ public class ProductGrpcService : Product.Grpc.ProductGrpcService.ProductGrpcSer
                     Name = product.Name,
                     Sku = product.Sku,
                     Price = (double)product.Price,
-                    StockQuantity = product.Inventory.Stock,
-                    IsAvailable = product.IsActive && product.IsPublished && product.Inventory.Stock > 0,
+                    StockQuantity = product.Stock,
+                    IsAvailable = product.Status == ProductStatus.Active && product.IsPublished && product.Stock > 0,
                     ImageUrl = product.Images?.FirstOrDefault()?.Url ?? "",
                     Currency = "VND"
                 });
@@ -66,6 +67,7 @@ public class ProductGrpcService : Product.Grpc.ProductGrpcService.ProductGrpcSer
 
         return response;
     }
+
 
     public override async Task<StockCheckResponse> CheckStock(StockCheckRequest request, ServerCallContext context)
     {
@@ -84,14 +86,14 @@ public class ProductGrpcService : Product.Grpc.ProductGrpcService.ProductGrpcSer
             };
         }
 
-        var isAvailable = product.IsActive && product.IsPublished && product.Inventory.Stock > 0;
-        var available = product.Inventory.Stock >= request.Quantity && isAvailable;
+        var isAvailable = product.Status == ProductStatus.Active && product.IsPublished && product.Stock > 0;
+        var available = product.Stock >= request.Quantity && isAvailable;
 
         return new StockCheckResponse
         {
             Available = available,
-            StockQuantity = product.Inventory.Stock,
-            Message = available ? "Stock available" : $"Only {product.Inventory.Stock} items available"
+            StockQuantity = product.Stock,
+            Message = available ? "Stock available" : $"Only {product.Stock} items available"
         };
     }
 
@@ -120,25 +122,25 @@ public class ProductGrpcService : Product.Grpc.ProductGrpcService.ProductGrpcSer
                 result.AvailableQuantity = 0;
                 response.AllValid = false;
             }
-            else if (!product.IsActive || !product.IsPublished)
+            else if (product.Status != ProductStatus.Active || !product.IsPublished)
             {
                 result.Valid = false;
                 result.Message = "Product not available";
                 result.AvailableQuantity = 0;
                 response.AllValid = false;
             }
-            else if (product.Inventory.Stock < item.Quantity)
+            else if (product.Stock < item.Quantity)
             {
                 result.Valid = false;
-                result.Message = $"Insufficient stock. Only {product.Inventory.Stock} available";
-                result.AvailableQuantity = product.Inventory.Stock;
+                result.Message = $"Insufficient stock. Only {product.Stock} available";
+                result.AvailableQuantity = product.Stock;
                 response.AllValid = false;
             }
             else
             {
                 result.Valid = true;
                 result.Message = "Valid";
-                result.AvailableQuantity = product.Inventory.Stock;
+                result.AvailableQuantity = product.Stock;
             }
 
             response.Results.Add(result);

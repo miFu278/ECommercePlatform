@@ -12,10 +12,14 @@ public interface IProductService
     Task<ProductDto> CreateAsync(CreateProductDto dto);
     Task<ProductDto> UpdateAsync(string id, UpdateProductDto dto);
     Task DeleteAsync(string id);
-    
+
     // Advanced features
     Task<PagedResultDto<ProductListDto>> SearchAndFilterAsync(ProductSearchDto searchDto);
     Task<IEnumerable<ProductListDto>> GetFeaturedAsync(int limit = 10);
     Task<IEnumerable<ProductListDto>> GetRelatedProductsAsync(string productId, int limit = 5);
     Task<bool> UpdateStockAsync(string id, int quantity);
+
+    // Image management
+    Task<string> AddProductImageAsync(string productId, Stream fileStream, string fileName, string contentType);
+    Task DeleteProductImageAsync(string productId, string imageUrl);
 }
