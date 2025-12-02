@@ -12,21 +12,80 @@ namespace ECommerce.Order.API.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<OrdersController> _logger;
 
-    public OrdersController(IOrderService orderService)
+    public OrdersController(
+        IOrderService orderService,
+        IConfiguration configuration,
+        ILogger<OrdersController> logger)
     {
         _orderService = orderService;
+        _configuration = configuration;
+        _logger = logger;
     }
+    
+    private IConfiguration Configuration => _configuration;
 
     /// <summary>
     /// Create a new order from cart
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] CreateOrderDto dto)
+    public async Task<ActionResult> CreateOrder([FromBody] CreateOrderDto dto)
     {
         var userId = GetCurrentUserId();
         var order = await _orderService.CreateOrderAsync(userId, dto);
-        return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, order);
+        
+        // If payment method is online payment (transfer), create payment link
+        string? paymentUrl = null;
+        if (dto.PaymentMethod?.ToLower() == "transfer")
+        {
+            try
+            {
+                // Call Payment Service to create payment
+                using var httpClient = new HttpClient();
+                var paymentRequest = new
+                {
+                    orderId = order.Id,
+                    method = 1, // PaymentMethod.Online enum value
+                    paymentToken = (string?)null
+                };
+                
+                var paymentServiceUrl = Configuration["Services:Payment:Http"] ?? "http://localhost:5050";
+                var response = await httpClient.PostAsJsonAsync($"{paymentServiceUrl}/api/payments", paymentRequest);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var paymentResult = await response.Content.ReadFromJsonAsync<PaymentResponseDto>();
+                    // PayOS checkout URL is stored in ErrorMessage field temporarily
+                    paymentUrl = paymentResult?.ErrorMessage;
+                    
+                    _logger.LogInformation("Payment link created for order {OrderId}: {PaymentUrl}", order.Id, paymentUrl);
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("Payment Service returned {StatusCode}: {Error}", response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create payment link for order {OrderId}", order.Id);
+                // Continue without payment link - user can pay later or use COD
+            }
+        }
+        
+        // Return order with payment URL if available
+        var result = new
+        {
+            order.Id,
+            order.OrderNumber,
+            order.Status,
+            order.TotalAmount,
+            paymentUrl
+        };
+        
+        return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, result);
     }
 
     /// <summary>
@@ -241,4 +300,13 @@ public class OrdersController : ControllerBase
 public class CancelOrderDto
 {
     public string Reason { get; set; } = string.Empty;
+}
+
+// DTO to receive response from Payment Service
+public class PaymentResponseDto
+{
+    public Guid Id { get; set; }
+    public string PaymentNumber { get; set; } = string.Empty;
+    public string? ErrorMessage { get; set; } // Contains PayOS checkout URL
+    public string? ProviderTransactionId { get; set; }
 }

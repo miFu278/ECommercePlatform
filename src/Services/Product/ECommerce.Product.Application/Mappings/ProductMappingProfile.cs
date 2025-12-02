@@ -13,10 +13,7 @@ public class ProductMappingProfile : Profile
         CreateMap<Domain.Entities.Product, ProductDto>();
 
         CreateMap<Domain.Entities.Product, ProductListDto>()
-            .ForMember(dest => dest.PrimaryImageUrl, opt => opt.MapFrom(src =>
-                src.Images.FirstOrDefault(i => i.IsPrimary) != null
-                    ? src.Images.First(i => i.IsPrimary).Url
-                    : src.Images.FirstOrDefault() != null ? src.Images.First().Url : null))
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images))
             .ForMember(dest => dest.InStock, opt => opt.MapFrom(src =>
                 !src.TrackInventory || src.Stock > 0))
             .ForMember(dest => dest.CategoryName, opt => opt.Ignore());

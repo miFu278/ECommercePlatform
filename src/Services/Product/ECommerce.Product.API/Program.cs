@@ -15,14 +15,9 @@ namespace ECommerce.Product.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Configure Kestrel for multiple ports
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // REST API (HTTP/1.1)
-                options.ListenLocalhost(5001, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
-                // gRPC (HTTP/2)
-                options.ListenLocalhost(5011, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
-            });
+            // Kestrel configuration is handled by ASPNETCORE_URLS environment variable
+            // Local: http://localhost:5020;http://localhost:5021
+            // Docker: http://+:8080;http://+:8081
 
             // Add services to the container.
             builder.Services.AddControllers();

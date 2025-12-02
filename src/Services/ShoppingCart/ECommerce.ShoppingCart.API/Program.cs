@@ -24,13 +24,31 @@ var redisConnection = builder.Configuration.GetConnectionString("Redis")
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var configuration = ConfigurationOptions.Parse(redisConnection);
-    configuration.AbortOnConnectFail = false;
-    configuration.ConnectTimeout = 10000;
-    configuration.SyncTimeout = 10000;
-    configuration.ConnectRetry = 3;
-    configuration.KeepAlive = 60;
-    return ConnectionMultiplexer.Connect(configuration);
+    try
+    {
+        var configuration = ConfigurationOptions.Parse(redisConnection);
+        configuration.AbortOnConnectFail = false;
+        configuration.ConnectTimeout = 10000;
+        configuration.SyncTimeout = 10000;
+        configuration.ConnectRetry = 3;
+        configuration.KeepAlive = 60;
+        configuration.AllowAdmin = false;
+        
+        var muxer = ConnectionMultiplexer.Connect(configuration);
+        
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("✅ Redis ConnectionMultiplexer created");
+        Console.ResetColor();
+        
+        return muxer;
+    }
+    catch (Exception ex)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"❌ Redis connection failed: {ex.Message}");
+        Console.ResetColor();
+        throw;
+    }
 });
 
 builder.Services.AddSingleton<RedisContext>();

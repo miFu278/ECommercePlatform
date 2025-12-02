@@ -1,6 +1,7 @@
 using System.Text;
 using ECommerce.EventBus.Abstractions;
 using ECommerce.EventBus.InMemory;
+using ECommerce.EventBus.RabbitMQ;
 using ECommerce.Payment.Application.Interfaces;
 using ECommerce.Payment.Application.Mappings;
 using ECommerce.Payment.Application.Services;
@@ -75,12 +76,35 @@ builder.Services.AddAutoMapper(typeof(PaymentMappingProfile));
 // Unit of Work & Repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// gRPC Client for Order Service
+builder.Services.AddScoped<IOrderService, ECommerce.Payment.Infrastructure.GrpcClients.OrderGrpcClient>();
+
 // Services
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentGateway, PayOSGateway>();
 
-// Event Bus (In-Memory for now)
-builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+// Event Bus - Use RabbitMQ if configured
+var rabbitMQConnectionString = builder.Configuration["RabbitMQ:ConnectionString"];
+var rabbitMQQueueName = builder.Configuration["RabbitMQ:QueueName"] ?? "payment_service_queue";
+
+if (!string.IsNullOrEmpty(rabbitMQConnectionString))
+{
+    builder.Services.AddSingleton<IEventBus>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<RabbitMQEventBus>>();
+        return new RabbitMQEventBus(sp, logger, rabbitMQConnectionString, rabbitMQQueueName);
+    });
+    Console.WriteLine("✅ Using RabbitMQ EventBus");
+}
+else
+{
+    builder.Services.AddSingleton<IEventBus>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<InMemoryEventBus>>();
+        return new InMemoryEventBus(sp, logger);
+    });
+    Console.WriteLine("⚠️ Using InMemory EventBus");
+}
 
 // JWT Authentication (for fallback when not using Gateway)
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-super-secret-key-min-32-characters-long-for-production";
@@ -137,5 +161,11 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine("✅ Payment Service started");
+Console.WriteLine("💳 REST API: http://localhost:5050");
+Console.WriteLine("🔗 Order gRPC: " + (builder.Configuration["Services:Order:Grpc"] ?? "http://localhost:5041"));
+Console.ResetColor();
 
 app.Run();

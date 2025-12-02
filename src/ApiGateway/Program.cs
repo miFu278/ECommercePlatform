@@ -11,7 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Load Ocelot configuration based on environment
 var env = builder.Environment.EnvironmentName;
-builder.Configuration.AddJsonFile($"ocelot.{env}.json", optional: false, reloadOnChange: true);
+// Check if running in Docker (use Docker config) or local (use Development config)
+var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+var ocelotFile = isDocker ? "ocelot.Docker.json" : $"ocelot.{env}.json";
+builder.Configuration.AddJsonFile(ocelotFile, optional: false, reloadOnChange: true);
 
 // JWT Authentication - Validate at Gateway level
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-super-secret-key-min-32-characters-long-for-production";
@@ -59,6 +62,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Add CORS policy for frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5173",  // Vite dev server
+                "http://localhost:3000",  // Alternative frontend port
+                "http://localhost:4173"   // Vite preview
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition"); // For file downloads
+    });
+});
+
 // Add Ocelot services
 builder.Services.AddOcelot();
 
@@ -77,8 +97,8 @@ Console.ResetColor();
 var ocelotConfig = builder.Configuration.GetSection("Routes").Get<List<FileRoute>>();
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine($"✓ Environment: {env}");
-Console.WriteLine($"✓ Gateway URL: http://localhost:5050");
-Console.WriteLine($"✓ Metrics: http://localhost:5050/metrics");
+Console.WriteLine($"✓ Gateway URL: http://localhost:5000");
+Console.WriteLine($"✓ Metrics: http://localhost:5000/metrics");
 Console.WriteLine($"✓ Prometheus: http://localhost:9090");
 Console.WriteLine($"✓ Grafana: http://localhost:3000");
 Console.WriteLine($"✓ Routes loaded: {ocelotConfig?.Count ?? 0}");
@@ -101,6 +121,9 @@ Console.ForegroundColor = ConsoleColor.Gray;
 Console.WriteLine("Press Ctrl+C to shutdown");
 Console.ResetColor();
 Console.WriteLine(new string('─', 63) + "\n");
+
+// Enable CORS - Must be before Authentication
+app.UseCors("AllowFrontend");
 
 // Enable Prometheus metrics
 app.UseMetricServer(); // Expose /metrics endpoint

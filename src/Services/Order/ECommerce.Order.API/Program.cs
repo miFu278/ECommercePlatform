@@ -1,6 +1,9 @@
 using System.Text;
 using ECommerce.EventBus.Abstractions;
+using ECommerce.EventBus.Events;
 using ECommerce.EventBus.InMemory;
+using ECommerce.EventBus.RabbitMQ;
+using ECommerce.Order.Application.EventHandlers;
 using ECommerce.Order.Application.Interfaces;
 using ECommerce.Order.Application.Mappings;
 using ECommerce.Order.Application.Services;
@@ -11,6 +14,7 @@ using ECommerce.Order.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,7 +23,12 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Kestrel configuration is handled by ASPNETCORE_URLS environment variable
+// Local: http://localhost:5040;http://localhost:5041
+// Docker: http://+:8080;http://+:8081
+
 // Add services to the container
+builder.Services.AddGrpc();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -103,10 +112,37 @@ builder.Services.AddHttpClient<IPaymentService, ECommerce.Order.Infrastructure.S
 });
 
 // Event Handlers
-builder.Services.AddScoped<ECommerce.Order.Application.EventHandlers.PaymentCompletedEventHandler>();
+builder.Services.AddScoped<PaymentCompletedEventHandler>();
 
-// Event Bus (In-Memory for now)
-builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+// Event Bus - Use RabbitMQ if configured, otherwise InMemory
+var rabbitMQConnectionString = builder.Configuration["RabbitMQ:ConnectionString"];
+var rabbitMQQueueName = builder.Configuration["RabbitMQ:QueueName"] ?? "order_service_queue";
+
+if (!string.IsNullOrEmpty(rabbitMQConnectionString))
+{
+    builder.Services.AddSingleton<IEventBus>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<RabbitMQEventBus>>();
+        var eventBus = new RabbitMQEventBus(sp, logger, rabbitMQConnectionString, rabbitMQQueueName);
+        
+        // Subscribe to events
+        eventBus.Subscribe<PaymentCompletedEvent, PaymentCompletedEventHandler>();
+        
+        return eventBus;
+    });
+    Console.WriteLine("✅ Using RabbitMQ EventBus");
+}
+else
+{
+    builder.Services.AddSingleton<IEventBus>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<InMemoryEventBus>>();
+        var eventBus = new InMemoryEventBus(sp, logger);
+        eventBus.Subscribe<PaymentCompletedEvent, PaymentCompletedEventHandler>();
+        return eventBus;
+    });
+    Console.WriteLine("⚠️ Using InMemory EventBus (RabbitMQ not configured)");
+}
 
 // JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
@@ -163,5 +199,14 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Map gRPC Service
+app.MapGrpcService<ECommerce.Order.API.Grpc.OrderGrpcService>();
+
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine("✅ Order Service started");
+Console.WriteLine("📦 REST API: http://localhost:5040");
+Console.WriteLine("🔗 gRPC: http://localhost:5041");
+Console.ResetColor();
 
 app.Run();

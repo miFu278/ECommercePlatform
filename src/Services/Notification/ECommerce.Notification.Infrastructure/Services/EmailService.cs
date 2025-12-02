@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 using ECommerce.Notification.Application.Interfaces;
 using ECommerce.Notification.Domain.Entities;
 using ECommerce.Notification.Domain.Enums;
@@ -28,11 +29,26 @@ public class EmailService : IEmailService
         _notificationLogRepository = notificationLogRepository;
     }
 
-    public async Task SendOrderConfirmationAsync(string email, string orderNumber, decimal totalAmount, string customerName)
+    public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = true)
+    {
+        await SendEmailInternalAsync(to, subject, body, "custom-email", null);
+    }
+
+    public async Task SendWelcomeEmailAsync(string email, string name)
+    {
+        var subject = "Chào mừng bạn đến với ECommerce!";
+        var body = GetWelcomeEmailTemplate(name);
+        await SendEmailInternalAsync(email, subject, body, "welcome-email", new Dictionary<string, string>
+        {
+            { "name", name }
+        });
+    }
+
+    public async Task SendOrderConfirmationAsync(string email, string orderNumber, string customerName, decimal totalAmount, List<OrderItemInfo>? items = null)
     {
         var subject = $"Xác nhận đơn hàng #{orderNumber}";
-        var body = GetOrderConfirmationTemplate(orderNumber, totalAmount, customerName);
-        await SendEmailAsync(email, subject, body, "order-confirmation", new Dictionary<string, string>
+        var body = GetOrderConfirmationTemplate(orderNumber, totalAmount, customerName, items);
+        await SendEmailInternalAsync(email, subject, body, "order-confirmation", new Dictionary<string, string>
         {
             { "orderNumber", orderNumber },
             { "totalAmount", totalAmount.ToString() },
@@ -40,52 +56,41 @@ public class EmailService : IEmailService
         });
     }
 
-    public async Task SendPaymentReceiptAsync(string email, string orderNumber, string paymentNumber, decimal amount)
+    public async Task SendPaymentConfirmationAsync(string email, string orderNumber, decimal amount, string paymentMethod, string transactionId)
     {
-        var subject = $"Biên lai thanh toán - Đơn hàng #{orderNumber}";
-        var body = GetPaymentReceiptTemplate(orderNumber, paymentNumber, amount);
-        await SendEmailAsync(email, subject, body, "payment-receipt", new Dictionary<string, string>
+        var subject = $"Thanh toán thành công - Đơn hàng #{orderNumber}";
+        var body = GetPaymentReceiptTemplate(orderNumber, transactionId, amount);
+        await SendEmailInternalAsync(email, subject, body, "payment-confirmation", new Dictionary<string, string>
         {
             { "orderNumber", orderNumber },
-            { "paymentNumber", paymentNumber },
+            { "transactionId", transactionId },
             { "amount", amount.ToString() }
         });
     }
 
-    public async Task SendOrderShippedAsync(string email, string orderNumber, string trackingNumber, string customerName)
+    public async Task SendShippingNotificationAsync(string email, string orderNumber, string trackingNumber, string carrier)
     {
-        var subject = $"Đơn hàng #{orderNumber} đã được giao cho đơn vị vận chuyển";
-        var body = GetOrderShippedTemplate(orderNumber, trackingNumber, customerName);
-        await SendEmailAsync(email, subject, body, "order-shipped", new Dictionary<string, string>
+        var subject = $"Đơn hàng #{orderNumber} đã được giao cho {carrier}";
+        var body = GetOrderShippedTemplate(orderNumber, trackingNumber, "Khách hàng");
+        await SendEmailInternalAsync(email, subject, body, "shipping-notification", new Dictionary<string, string>
         {
             { "orderNumber", orderNumber },
             { "trackingNumber", trackingNumber },
-            { "customerName", customerName }
+            { "carrier", carrier }
         });
     }
 
-    public async Task SendOrderDeliveredAsync(string email, string orderNumber, string customerName)
+    public async Task SendPasswordResetAsync(string email, string resetLink)
     {
-        var subject = $"Đơn hàng #{orderNumber} đã được giao thành công";
-        var body = GetOrderDeliveredTemplate(orderNumber, customerName);
-        await SendEmailAsync(email, subject, body, "order-delivered", new Dictionary<string, string>
+        var subject = "Đặt lại mật khẩu - ECommerce";
+        var body = GetPasswordResetTemplate(resetLink);
+        await SendEmailInternalAsync(email, subject, body, "password-reset", new Dictionary<string, string>
         {
-            { "orderNumber", orderNumber },
-            { "customerName", customerName }
+            { "resetLink", resetLink }
         });
     }
 
-    public async Task SendWelcomeEmailAsync(string email, string firstName)
-    {
-        var subject = "Chào mừng bạn đến với ECommerce!";
-        var body = GetWelcomeEmailTemplate(firstName);
-        await SendEmailAsync(email, subject, body, "welcome-email", new Dictionary<string, string>
-        {
-            { "firstName", firstName }
-        });
-    }
-
-    private async Task SendEmailAsync(string toEmail, string subject, string body, string emailType, Dictionary<string, string>? metadata = null)
+    private async Task SendEmailInternalAsync(string toEmail, string subject, string body, string emailType, Dictionary<string, string>? metadata = null)
     {
         var fromEmail = _configuration["Email:Smtp:FromEmail"] ?? "noreply@ecommerce.com";
         
@@ -186,8 +191,66 @@ public class EmailService : IEmailService
         }
     }
 
-    private string GetOrderConfirmationTemplate(string orderNumber, decimal totalAmount, string customerName)
+    private string GetPasswordResetTemplate(string resetLink)
     {
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }}
+        .header {{ background-color: #dc3545; color: white; padding: 20px; text-align: center; }}
+        .content {{ background-color: white; padding: 30px; margin-top: 20px; }}
+        .warning {{ background-color: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ffc107; }}
+        .footer {{ text-align: center; margin-top: 30px; font-size: 12px; color: #666; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🔐 Đặt lại mật khẩu</h1>
+        </div>
+        <div class='content'>
+            <p>Xin chào,</p>
+            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+            
+            <p style='text-align: center; margin: 30px 0;'>
+                <a href='{resetLink}' style='display: inline-block; padding: 15px 30px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 16px;'>Đặt lại mật khẩu</a>
+            </p>
+
+            <div class='warning'>
+                <p><strong>⚠️ Lưu ý:</strong></p>
+                <ul>
+                    <li>Link này sẽ hết hạn sau 1 giờ</li>
+                    <li>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này</li>
+                    <li>Không chia sẻ link này với bất kỳ ai</li>
+                </ul>
+            </div>
+        </div>
+        <div class='footer'>
+            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+            <p>© 2024 ECommerce Platform. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+    }
+
+    private string GetOrderConfirmationTemplate(string orderNumber, decimal totalAmount, string customerName, List<OrderItemInfo>? items = null)
+    {
+        var itemsHtml = new StringBuilder();
+        if (items != null && items.Any())
+        {
+            itemsHtml.Append("<table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>");
+            itemsHtml.Append("<tr style='background-color: #f0f0f0;'><th style='padding: 10px; text-align: left;'>Sản phẩm</th><th style='padding: 10px; text-align: center;'>SL</th><th style='padding: 10px; text-align: right;'>Giá</th></tr>");
+            foreach (var item in items)
+            {
+                itemsHtml.Append($"<tr><td style='padding: 10px; border-bottom: 1px solid #eee;'>{item.ProductName}</td><td style='padding: 10px; text-align: center; border-bottom: 1px solid #eee;'>{item.Quantity}</td><td style='padding: 10px; text-align: right; border-bottom: 1px solid #eee;'>{item.Price:N0} ₫</td></tr>");
+            }
+            itemsHtml.Append("</table>");
+        }
+
         return $@"
 <!DOCTYPE html>
 <html>
@@ -215,6 +278,8 @@ public class EmailService : IEmailService
                 <p><strong>Mã đơn hàng:</strong> {orderNumber}</p>
                 <p><strong>Tổng tiền:</strong> <span class='total'>{totalAmount:N0} ₫</span></p>
             </div>
+
+            {itemsHtml}
 
             <p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng được giao cho đơn vị vận chuyển.</p>
             

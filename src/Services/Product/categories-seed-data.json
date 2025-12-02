@@ -1,0 +1,827 @@
+[
+  {
+    "name": "PC Build Hoàn Chỉnh",
+    "slug": "pc-build-hoan-chinh",
+    "description": "Bộ PC đã build sẵn, cắm điện là chơi",
+    "parentId": null,
+    "level": 0,
+    "path": [],
+    "image": null,
+    "icon": "📦",
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "PC Build Hoàn Chỉnh - Bộ PC Đã Build Sẵn",
+      "metaDescription": "Mua PC build sẵn Gaming, Workstation, Văn Phòng giá tốt, bảo hành chính hãng"
+    }
+  },
+  {
+    "name": "PC Gaming",
+    "slug": "pc-gaming",
+    "description": "PC Gaming hiệu năng cao cho game thủ",
+    "parentId": "PARENT_ID_PC_BUILD",
+    "level": 1,
+    "path": ["PARENT_ID_PC_BUILD"],
+    "image": null,
+    "icon": "🎮",
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "price",
+        "displayName": "Mức giá",
+        "valueOptions": ["10-15tr", "15-20tr", "20-30tr", "30-50tr", "50tr+"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "PC Gaming - Bộ PC Chơi Game Mạnh Mẽ",
+      "metaDescription": "PC Gaming cấu hình mạnh, chơi mượt mọi tựa game"
+    }
+  },
+  {
+    "name": "PC Workstation",
+    "slug": "pc-workstation",
+    "description": "PC Workstation cho công việc đồ họa, render",
+    "parentId": "PARENT_ID_PC_BUILD",
+    "level": 1,
+    "path": ["PARENT_ID_PC_BUILD"],
+    "image": null,
+    "icon": "💼",
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "PC Workstation - Máy Trạm Chuyên Nghiệp",
+      "metaDescription": "PC Workstation hiệu năng cao cho render, đồ họa 3D"
+    }
+  },
+  {
+    "name": "PC Văn Phòng",
+    "slug": "pc-van-phong",
+    "description": "PC Văn Phòng giá rẻ, ổn định",
+    "parentId": "PARENT_ID_PC_BUILD",
+    "level": 1,
+    "path": ["PARENT_ID_PC_BUILD"],
+    "image": null,
+    "icon": "🏢",
+    "order": 3,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "PC Văn Phòng - Máy Tính Văn Phòng Giá Rẻ",
+      "metaDescription": "PC văn phòng ổn định, tiết kiệm điện"
+    }
+  },
+  {
+    "name": "PC Giả Lập",
+    "slug": "pc-gia-lap",
+    "description": "PC tối ưu cho giả lập Android, iOS",
+    "parentId": "PARENT_ID_PC_BUILD",
+    "level": 1,
+    "path": ["PARENT_ID_PC_BUILD"],
+    "image": null,
+    "icon": "🎬",
+    "order": 4,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "PC Giả Lập - Máy Tính Chạy Giả Lập Mượt",
+      "metaDescription": "PC tối ưu cho giả lập LDPlayer, Bluestacks"
+    }
+  },
+  {
+    "name": "PC Mini",
+    "slug": "pc-mini",
+    "description": "PC Mini gọn nhẹ, tiết kiệm không gian",
+    "parentId": "PARENT_ID_PC_BUILD",
+    "level": 1,
+    "path": ["PARENT_ID_PC_BUILD"],
+    "image": null,
+    "icon": "📦",
+    "order": 5,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "PC Mini - Máy Tính Mini Gọn Nhẹ",
+      "metaDescription": "PC Mini tiết kiệm không gian, hiệu năng tốt"
+    }
+  },
+  {
+    "name": "Linh Kiện Máy Tính",
+    "slug": "linh-kien-may-tinh",
+    "description": "Linh kiện PC chính hãng, giá tốt",
+    "parentId": null,
+    "level": 0,
+    "path": [],
+    "image": null,
+    "icon": "🔧",
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Linh Kiện Máy Tính - Linh Kiện PC Chính Hãng",
+      "metaDescription": "Mua linh kiện máy tính CPU, RAM, SSD, GPU giá tốt"
+    }
+  },
+  {
+    "name": "CPU - Bộ Vi Xử Lý",
+    "slug": "cpu",
+    "description": "CPU Intel, AMD chính hãng",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "🧠",
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["Intel", "AMD"]
+      },
+      {
+        "fieldName": "socket_type",
+        "displayName": "Socket",
+        "valueOptions": ["LGA1700", "LGA1200", "AM5", "AM4"]
+      },
+      {
+        "fieldName": "core_count",
+        "displayName": "Số nhân",
+        "valueOptions": ["4", "6", "8", "12", "16", "24"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "CPU - Bộ Vi Xử Lý Intel, AMD",
+      "metaDescription": "CPU Intel Core, AMD Ryzen chính hãng giá tốt"
+    }
+  },
+  {
+    "name": "Intel",
+    "slug": "cpu-intel",
+    "description": "CPU Intel Core i3, i5, i7, i9",
+    "parentId": "PARENT_ID_CPU",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_CPU"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "CPU Intel - Bộ Vi Xử Lý Intel",
+      "metaDescription": "CPU Intel Core i3, i5, i7, i9 thế hệ mới"
+    }
+  },
+  {
+    "name": "AMD",
+    "slug": "cpu-amd",
+    "description": "CPU AMD Ryzen 3, 5, 7, 9",
+    "parentId": "PARENT_ID_CPU",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_CPU"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "CPU AMD - Bộ Vi Xử Lý AMD Ryzen",
+      "metaDescription": "CPU AMD Ryzen 3, 5, 7, 9 hiệu năng cao"
+    }
+  },
+  {
+    "name": "RAM - Bộ Nhớ",
+    "slug": "ram",
+    "description": "RAM DDR4, DDR5 chính hãng",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "💾",
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "memory_type",
+        "displayName": "Loại RAM",
+        "valueOptions": ["DDR4", "DDR5"]
+      },
+      {
+        "fieldName": "capacity_gb",
+        "displayName": "Dung lượng",
+        "valueOptions": ["8", "16", "32", "64"]
+      },
+      {
+        "fieldName": "memory_speed_mhz",
+        "displayName": "Bus",
+        "valueOptions": ["2666", "3200", "3600", "4800", "5200", "6000"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "RAM - Bộ Nhớ DDR4, DDR5",
+      "metaDescription": "RAM DDR4, DDR5 Kingston, Corsair, G.Skill giá tốt"
+    }
+  },
+  {
+    "name": "DDR4",
+    "slug": "ram-ddr4",
+    "description": "RAM DDR4 phổ biến, giá tốt",
+    "parentId": "PARENT_ID_RAM",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_RAM"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "RAM DDR4 - Bộ Nhớ DDR4",
+      "metaDescription": "RAM DDR4 8GB, 16GB, 32GB giá rẻ"
+    }
+  },
+  {
+    "name": "DDR5",
+    "slug": "ram-ddr5",
+    "description": "RAM DDR5 thế hệ mới, tốc độ cao",
+    "parentId": "PARENT_ID_RAM",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_RAM"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "RAM DDR5 - Bộ Nhớ DDR5 Thế Hệ Mới",
+      "metaDescription": "RAM DDR5 tốc độ cao cho gaming, workstation"
+    }
+  },
+  {
+    "name": "SSD - Ổ Cứng",
+    "slug": "ssd",
+    "description": "SSD NVMe, SATA tốc độ cao",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "💿",
+    "order": 3,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "memory_type",
+        "displayName": "Loại SSD",
+        "valueOptions": ["NVMe M.2", "SATA"]
+      },
+      {
+        "fieldName": "capacity_gb",
+        "displayName": "Dung lượng",
+        "valueOptions": ["128", "256", "512", "1000", "2000"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "SSD - Ổ Cứng SSD NVMe, SATA",
+      "metaDescription": "SSD Samsung, WD, Kingston tốc độ cao"
+    }
+  },
+  {
+    "name": "NVMe M.2",
+    "slug": "ssd-nvme",
+    "description": "SSD NVMe M.2 tốc độ siêu nhanh",
+    "parentId": "PARENT_ID_SSD",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_SSD"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "SSD NVMe M.2 - Ổ Cứng NVMe Tốc Độ Cao",
+      "metaDescription": "SSD NVMe M.2 Gen3, Gen4 tốc độ siêu nhanh"
+    }
+  },
+  {
+    "name": "SATA",
+    "slug": "ssd-sata",
+    "description": "SSD SATA 2.5 inch giá rẻ",
+    "parentId": "PARENT_ID_SSD",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_SSD"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "SSD SATA - Ổ Cứng SSD SATA 2.5 Inch",
+      "metaDescription": "SSD SATA 2.5 inch giá rẻ, độ bền cao"
+    }
+  },
+  {
+    "name": "GPU - Card Đồ Họa",
+    "slug": "gpu",
+    "description": "Card đồ họa NVIDIA, AMD",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "🎨",
+    "order": 4,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["NVIDIA", "AMD"]
+      },
+      {
+        "fieldName": "vram_gb",
+        "displayName": "VRAM",
+        "valueOptions": ["4", "6", "8", "12", "16", "24"]
+      },
+      {
+        "fieldName": "gpu_chipset",
+        "displayName": "Chipset",
+        "valueOptions": ["RTX 4060", "RTX 4070", "RTX 4080", "RX 7600", "RX 7800 XT"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "GPU - Card Đồ Họa NVIDIA, AMD",
+      "metaDescription": "Card đồ họa RTX 4060, 4070, RX 7800 XT giá tốt"
+    }
+  },
+  {
+    "name": "NVIDIA",
+    "slug": "gpu-nvidia",
+    "description": "Card đồ họa NVIDIA GeForce RTX",
+    "parentId": "PARENT_ID_GPU",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_GPU"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "GPU NVIDIA - Card Đồ Họa NVIDIA GeForce",
+      "metaDescription": "Card đồ họa NVIDIA RTX 4060, 4070, 4080, 4090"
+    }
+  },
+  {
+    "name": "AMD",
+    "slug": "gpu-amd",
+    "description": "Card đồ họa AMD Radeon",
+    "parentId": "PARENT_ID_GPU",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_GPU"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "GPU AMD - Card Đồ Họa AMD Radeon",
+      "metaDescription": "Card đồ họa AMD RX 7600, 7800 XT, 7900 XTX"
+    }
+  }
+,
+  {
+    "name": "Mainboard",
+    "slug": "mainboard",
+    "description": "Bo mạch chủ Intel, AMD",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "🔌",
+    "order": 5,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "socket_type",
+        "displayName": "Socket",
+        "valueOptions": ["LGA1700", "LGA1200", "AM5", "AM4"]
+      },
+      {
+        "fieldName": "chipset",
+        "displayName": "Chipset",
+        "valueOptions": ["B760", "Z790", "B650", "X670"]
+      },
+      {
+        "fieldName": "form_factor",
+        "displayName": "Form Factor",
+        "valueOptions": ["ATX", "mATX", "Mini-ITX"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Mainboard - Bo Mạch Chủ Intel, AMD",
+      "metaDescription": "Mainboard Asus, MSI, Gigabyte chính hãng"
+    }
+  },
+  {
+    "name": "Intel",
+    "slug": "mainboard-intel",
+    "description": "Mainboard Intel LGA1700, LGA1200",
+    "parentId": "PARENT_ID_MAINBOARD",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_MAINBOARD"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Mainboard Intel - Bo Mạch Chủ Intel",
+      "metaDescription": "Mainboard Intel B760, Z790 cho CPU Intel"
+    }
+  },
+  {
+    "name": "AMD",
+    "slug": "mainboard-amd",
+    "description": "Mainboard AMD AM5, AM4",
+    "parentId": "PARENT_ID_MAINBOARD",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_MAINBOARD"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Mainboard AMD - Bo Mạch Chủ AMD",
+      "metaDescription": "Mainboard AMD B650, X670 cho CPU Ryzen"
+    }
+  },
+  {
+    "name": "Vỏ Case",
+    "slug": "vo-case",
+    "description": "Vỏ case máy tính đẹp, tản nhiệt tốt",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "📦",
+    "order": 6,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "form_factor",
+        "displayName": "Kích thước",
+        "valueOptions": ["Full Tower", "Mid Tower", "Mini Tower", "Mini-ITX"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Vỏ Case - Case Máy Tính Đẹp",
+      "metaDescription": "Vỏ case gaming, văn phòng giá tốt"
+    }
+  },
+  {
+    "name": "Tản Nhiệt",
+    "slug": "tan-nhiet",
+    "description": "Tản nhiệt CPU khí, nước",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "❄️",
+    "order": 7,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "socket_type",
+        "displayName": "Socket hỗ trợ",
+        "valueOptions": ["LGA1700", "LGA1200", "AM5", "AM4"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Tản Nhiệt CPU - Tản Khí, Tản Nước",
+      "metaDescription": "Tản nhiệt CPU Deepcool, Cooler Master giá tốt"
+    }
+  },
+  {
+    "name": "Tản Khí",
+    "slug": "tan-khi",
+    "description": "Tản nhiệt khí giá rẻ, hiệu quả",
+    "parentId": "PARENT_ID_TAN_NHIET",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_TAN_NHIET"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Tản Nhiệt Khí - Tản Khí CPU",
+      "metaDescription": "Tản nhiệt khí giá rẻ, làm mát tốt"
+    }
+  },
+  {
+    "name": "Tản Nước",
+    "slug": "tan-nuoc",
+    "description": "Tản nhiệt nước AIO hiệu năng cao",
+    "parentId": "PARENT_ID_TAN_NHIET",
+    "level": 2,
+    "path": ["PARENT_ID_LINH_KIEN", "PARENT_ID_TAN_NHIET"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Tản Nhiệt Nước - Tản Nước AIO",
+      "metaDescription": "Tản nhiệt nước AIO 240mm, 360mm"
+    }
+  },
+  {
+    "name": "Nguồn - PSU",
+    "slug": "nguon-psu",
+    "description": "Nguồn máy tính 80 Plus",
+    "parentId": "PARENT_ID_LINH_KIEN",
+    "level": 1,
+    "path": ["PARENT_ID_LINH_KIEN"],
+    "image": null,
+    "icon": "⚡",
+    "order": 8,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "wattage",
+        "displayName": "Công suất",
+        "valueOptions": ["450", "550", "650", "750", "850", "1000"]
+      },
+      {
+        "fieldName": "efficiency_rating",
+        "displayName": "Hiệu suất",
+        "valueOptions": ["80 Plus", "80 Plus Bronze", "80 Plus Gold", "80 Plus Platinum"]
+      },
+      {
+        "fieldName": "modular",
+        "displayName": "Loại dây",
+        "valueOptions": ["Non-Modular", "Semi-Modular", "Full-Modular"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Nguồn PSU - Nguồn Máy Tính 80 Plus",
+      "metaDescription": "Nguồn máy tính Corsair, Cooler Master chính hãng"
+    }
+  },
+  {
+    "name": "Màn Hình",
+    "slug": "man-hinh",
+    "description": "Màn hình máy tính gaming, văn phòng",
+    "parentId": null,
+    "level": 0,
+    "path": [],
+    "image": null,
+    "icon": "🖥️",
+    "order": 3,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "screen_size_inch",
+        "displayName": "Kích thước",
+        "valueOptions": ["24", "27", "32", "34"]
+      },
+      {
+        "fieldName": "resolution",
+        "displayName": "Độ phân giải",
+        "valueOptions": ["1920x1080", "2560x1440", "3840x2160"]
+      },
+      {
+        "fieldName": "refresh_rate_hz",
+        "displayName": "Tần số quét",
+        "valueOptions": ["60", "75", "144", "165", "240"]
+      },
+      {
+        "fieldName": "panel_type",
+        "displayName": "Tấm nền",
+        "valueOptions": ["IPS", "VA", "TN"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Màn Hình Máy Tính - Gaming, Văn Phòng",
+      "metaDescription": "Màn hình Asus, LG, Samsung giá tốt"
+    }
+  },
+  {
+    "name": "Gaming Monitor",
+    "slug": "man-hinh-gaming",
+    "description": "Màn hình gaming tần số cao",
+    "parentId": "PARENT_ID_MAN_HINH",
+    "level": 1,
+    "path": ["PARENT_ID_MAN_HINH"],
+    "image": null,
+    "icon": "🎮",
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Màn Hình Gaming - Gaming Monitor",
+      "metaDescription": "Màn hình gaming 144Hz, 240Hz chơi game mượt"
+    }
+  },
+  {
+    "name": "144Hz+",
+    "slug": "man-hinh-144hz",
+    "description": "Màn hình 144Hz trở lên",
+    "parentId": "PARENT_ID_GAMING_MONITOR",
+    "level": 2,
+    "path": ["PARENT_ID_MAN_HINH", "PARENT_ID_GAMING_MONITOR"],
+    "image": null,
+    "icon": null,
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Màn Hình 144Hz - Gaming Monitor 144Hz",
+      "metaDescription": "Màn hình 144Hz, 165Hz, 240Hz giá tốt"
+    }
+  },
+  {
+    "name": "4K Gaming",
+    "slug": "man-hinh-4k-gaming",
+    "description": "Màn hình 4K cho gaming",
+    "parentId": "PARENT_ID_GAMING_MONITOR",
+    "level": 2,
+    "path": ["PARENT_ID_MAN_HINH", "PARENT_ID_GAMING_MONITOR"],
+    "image": null,
+    "icon": null,
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Màn Hình 4K Gaming - 4K Gaming Monitor",
+      "metaDescription": "Màn hình 4K 144Hz cho gaming cao cấp"
+    }
+  }
+,
+  {
+    "name": "Văn Phòng",
+    "slug": "man-hinh-van-phong",
+    "description": "Màn hình văn phòng giá rẻ",
+    "parentId": "PARENT_ID_MAN_HINH",
+    "level": 1,
+    "path": ["PARENT_ID_MAN_HINH"],
+    "image": null,
+    "icon": "💼",
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Màn Hình Văn Phòng - Office Monitor",
+      "metaDescription": "Màn hình văn phòng 24 inch, 27 inch giá rẻ"
+    }
+  },
+  {
+    "name": "Đồ Họa",
+    "slug": "man-hinh-do-hoa",
+    "description": "Màn hình đồ họa màu chuẩn",
+    "parentId": "PARENT_ID_MAN_HINH",
+    "level": 1,
+    "path": ["PARENT_ID_MAN_HINH"],
+    "image": null,
+    "icon": "🎨",
+    "order": 3,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Màn Hình Đồ Họa - Design Monitor",
+      "metaDescription": "Màn hình đồ họa màu chuẩn cho designer"
+    }
+  },
+  {
+    "name": "Gaming Gear",
+    "slug": "gaming-gear",
+    "description": "Phụ kiện gaming chuyên nghiệp",
+    "parentId": null,
+    "level": 0,
+    "path": [],
+    "image": null,
+    "icon": "🎮",
+    "order": 4,
+    "isActive": true,
+    "filterMeta": [],
+    "seo": {
+      "metaTitle": "Gaming Gear - Phụ Kiện Gaming",
+      "metaDescription": "Chuột, bàn phím, tai nghe gaming chính hãng"
+    }
+  },
+  {
+    "name": "Chuột Gaming",
+    "slug": "chuot-gaming",
+    "description": "Chuột gaming DPI cao, RGB",
+    "parentId": "PARENT_ID_GAMING_GEAR",
+    "level": 1,
+    "path": ["PARENT_ID_GAMING_GEAR"],
+    "image": null,
+    "icon": "🖱️",
+    "order": 1,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["Logitech", "Razer", "SteelSeries", "Corsair"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Chuột Gaming - Gaming Mouse",
+      "metaDescription": "Chuột gaming Logitech, Razer giá tốt"
+    }
+  },
+  {
+    "name": "Bàn Phím Gaming",
+    "slug": "ban-phim-gaming",
+    "description": "Bàn phím cơ gaming RGB",
+    "parentId": "PARENT_ID_GAMING_GEAR",
+    "level": 1,
+    "path": ["PARENT_ID_GAMING_GEAR"],
+    "image": null,
+    "icon": "⌨️",
+    "order": 2,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["Logitech", "Razer", "SteelSeries", "Corsair", "Keychron"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Bàn Phím Gaming - Gaming Keyboard",
+      "metaDescription": "Bàn phím cơ gaming RGB chính hãng"
+    }
+  },
+  {
+    "name": "Tai Nghe Gaming",
+    "slug": "tai-nghe-gaming",
+    "description": "Tai nghe gaming 7.1, RGB",
+    "parentId": "PARENT_ID_GAMING_GEAR",
+    "level": 1,
+    "path": ["PARENT_ID_GAMING_GEAR"],
+    "image": null,
+    "icon": "🎧",
+    "order": 3,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["Logitech", "Razer", "SteelSeries", "HyperX"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Tai Nghe Gaming - Gaming Headset",
+      "metaDescription": "Tai nghe gaming 7.1 chất lượng cao"
+    }
+  },
+  {
+    "name": "Tay Cầm",
+    "slug": "tay-cam",
+    "description": "Tay cầm chơi game Xbox, PS",
+    "parentId": "PARENT_ID_GAMING_GEAR",
+    "level": 1,
+    "path": ["PARENT_ID_GAMING_GEAR"],
+    "image": null,
+    "icon": "🎮",
+    "order": 4,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["Xbox", "PlayStation", "Logitech"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Tay Cầm - Game Controller",
+      "metaDescription": "Tay cầm Xbox, PS chính hãng"
+    }
+  },
+  {
+    "name": "Loa Máy Tính",
+    "slug": "loa-may-tinh",
+    "description": "Loa máy tính 2.0, 2.1, 5.1",
+    "parentId": null,
+    "level": 0,
+    "path": [],
+    "image": null,
+    "icon": "🔊",
+    "order": 5,
+    "isActive": true,
+    "filterMeta": [
+      {
+        "fieldName": "brand_name",
+        "displayName": "Hãng",
+        "valueOptions": ["Logitech", "Edifier", "Creative"]
+      }
+    ],
+    "seo": {
+      "metaTitle": "Loa Máy Tính - PC Speaker",
+      "metaDescription": "Loa máy tính 2.0, 2.1 chất lượng cao"
+    }
+  }
+]

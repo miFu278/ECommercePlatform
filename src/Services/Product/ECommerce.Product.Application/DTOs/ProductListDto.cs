@@ -13,7 +13,7 @@ public record ProductListDto(
     string Description = "",
     decimal Price = 0,
     decimal? CompareAtPrice = null,
-    string? PrimaryImageUrl = null,
+    List<ProductImageDto>? Images = null,
     string CategoryId = "",
     string CategoryName = "",
     string? BrandName = null,

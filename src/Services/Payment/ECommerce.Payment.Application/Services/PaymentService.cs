@@ -14,6 +14,7 @@ public class PaymentService : IPaymentService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPaymentGateway _paymentGateway;
+    private readonly IOrderService _orderService;
     private readonly IEventBus _eventBus;
     private readonly ILogger<PaymentService> _logger;
 
@@ -21,36 +22,52 @@ public class PaymentService : IPaymentService
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IPaymentGateway paymentGateway,
+        IOrderService orderService,
         IEventBus eventBus,
         ILogger<PaymentService> logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _paymentGateway = paymentGateway;
+        _orderService = orderService;
         _eventBus = eventBus;
         _logger = logger;
     }
 
     public async Task<PaymentDto> CreatePaymentAsync(Guid userId, CreatePaymentDto dto)
     {
-        // TODO: Get order info from Order Service
-        // For now, use dummy data
-        var orderNumber = $"ORD{DateTime.UtcNow:yyyyMMdd}-0001";
-        var amount = 100000m; // 100,000 VND
+        // Get order info from Order Service via gRPC
+        var orderInfo = await _orderService.GetOrderInfoAsync(dto.OrderId);
+        if (orderInfo == null)
+        {
+            throw new InvalidOperationException($"Order not found: {dto.OrderId}");
+        }
+
+        // Validate order belongs to user
+        if (orderInfo.UserId != userId)
+        {
+            throw new InvalidOperationException("Order does not belong to this user");
+        }
+
+        // Check if order is already paid
+        if (orderInfo.PaymentStatus == "Completed" || orderInfo.PaymentStatus == "Paid")
+        {
+            throw new InvalidOperationException("Order is already paid");
+        }
 
         var payment = new Domain.Entities.PaymentEntity
         {
             Id = Guid.NewGuid(),
             PaymentNumber = await _unitOfWork.Payments.GeneratePaymentNumberAsync(),
             OrderId = dto.OrderId,
-            OrderNumber = orderNumber,
+            OrderNumber = orderInfo.OrderNumber,
             UserId = userId,
             Status = PaymentStatus.Pending,
             Method = dto.Method,
             Provider = PaymentProvider.PayOS,
-            Amount = amount,
-            Currency = "VND",
-            Description = $"Thanh toán đơn hàng {orderNumber}",
+            Amount = orderInfo.TotalAmount,
+            Currency = orderInfo.Currency,
+            Description = $"Thanh toán đơn hàng {orderInfo.OrderNumber}",
             CreatedAt = DateTime.UtcNow
         };
 
@@ -135,6 +152,12 @@ public class PaymentService : IPaymentService
         });
 
         await _unitOfWork.SaveChangesAsync();
+
+        // Update order payment status via gRPC
+        await _orderService.UpdatePaymentStatusAsync(
+            payment.OrderId, 
+            "Completed", 
+            payment.ProviderTransactionId ?? "");
 
         // Publish event
         await _eventBus.PublishAsync(new PaymentCompletedEvent

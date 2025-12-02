@@ -1,5 +1,7 @@
 using ECommerce.EventBus.Abstractions;
+using ECommerce.EventBus.Events;
 using ECommerce.EventBus.InMemory;
+using ECommerce.EventBus.RabbitMQ;
 using ECommerce.Notification.Application.EventHandlers;
 using ECommerce.Notification.Application.Interfaces;
 using ECommerce.Notification.Domain.Interfaces;
@@ -9,6 +11,10 @@ using ECommerce.Notification.Infrastructure.Repositories;
 using ECommerce.Notification.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Kestrel configuration is handled by ASPNETCORE_URLS environment variable
+// Local: http://localhost:5060
+// Docker: http://+:8080
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -47,8 +53,37 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<OrderCreatedEventHandler>();
 builder.Services.AddScoped<PaymentCompletedEventHandler>();
 
-// Event Bus (In-Memory for now)
-builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+// Event Bus - Use RabbitMQ if configured
+var rabbitMQConnectionString = builder.Configuration["RabbitMQ:ConnectionString"];
+var rabbitMQQueueName = builder.Configuration["RabbitMQ:QueueName"] ?? "notification_service_queue";
+
+if (!string.IsNullOrEmpty(rabbitMQConnectionString))
+{
+    builder.Services.AddSingleton<IEventBus>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<RabbitMQEventBus>>();
+        var eventBus = new RabbitMQEventBus(sp, logger, rabbitMQConnectionString, rabbitMQQueueName);
+        
+        // Subscribe to events
+        eventBus.Subscribe<OrderCreatedEvent, OrderCreatedEventHandler>();
+        eventBus.Subscribe<PaymentCompletedEvent, PaymentCompletedEventHandler>();
+        
+        return eventBus;
+    });
+    Console.WriteLine("✅ Using RabbitMQ EventBus");
+}
+else
+{
+    builder.Services.AddSingleton<IEventBus>(sp =>
+    {
+        var logger = sp.GetRequiredService<ILogger<InMemoryEventBus>>();
+        var eventBus = new InMemoryEventBus(sp, logger);
+        eventBus.Subscribe<OrderCreatedEvent, OrderCreatedEventHandler>();
+        eventBus.Subscribe<PaymentCompletedEvent, PaymentCompletedEventHandler>();
+        return eventBus;
+    });
+    Console.WriteLine("⚠️ Using InMemory EventBus");
+}
 
 // CORS
 builder.Services.AddCors(options =>
@@ -80,9 +115,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("✅ Notification Service started with MongoDB");
-Console.WriteLine("📧 Email notifications enabled");
-Console.WriteLine("💾 Logging to MongoDB: ECommerce_Notification");
+Console.WriteLine("✅ Notification Service started");
+Console.WriteLine("📧 REST API: http://localhost:5060");
+Console.WriteLine("💾 MongoDB: " + mongoSettings.DatabaseName);
+Console.WriteLine("📬 Event handlers registered:");
+Console.WriteLine("   - OrderCreatedEvent → OrderCreatedEventHandler");
+Console.WriteLine("   - PaymentCompletedEvent → PaymentCompletedEventHandler");
 Console.ResetColor();
 
 app.Run();

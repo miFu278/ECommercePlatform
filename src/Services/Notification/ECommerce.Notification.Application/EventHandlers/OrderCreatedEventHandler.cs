@@ -1,10 +1,11 @@
+using ECommerce.EventBus.Abstractions;
 using ECommerce.EventBus.Events;
 using ECommerce.Notification.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Notification.Application.EventHandlers;
 
-public class OrderCreatedEventHandler
+public class OrderCreatedEventHandler : IEventHandler<OrderCreatedEvent>
 {
     private readonly IEmailService _emailService;
     private readonly ILogger<OrderCreatedEventHandler> _logger;
@@ -21,15 +22,24 @@ public class OrderCreatedEventHandler
 
         try
         {
-            // TODO: Get user email from User Service
-            var userEmail = $"user{@event.UserId}@example.com"; // Placeholder
-            var customerName = "Khách hàng"; // Placeholder
+            // Get user email - in production, this would come from User Service
+            var userEmail = @event.UserEmail ?? $"user{@event.UserId}@example.com";
+            var customerName = @event.CustomerName ?? "Khách hàng";
+
+            // Convert event items to email items
+            var items = @event.Items?.Select(i => new OrderItemInfo
+            {
+                ProductName = i.ProductName,
+                Quantity = i.Quantity,
+                Price = i.Price
+            }).ToList();
 
             await _emailService.SendOrderConfirmationAsync(
                 userEmail,
                 @event.OrderNumber,
+                customerName,
                 @event.TotalAmount,
-                customerName
+                items
             );
 
             _logger.LogInformation("Order confirmation email sent for Order: {OrderNumber}", @event.OrderNumber);

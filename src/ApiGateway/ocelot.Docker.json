@@ -3,14 +3,14 @@
     {
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5010 }],
+      "DownstreamHostAndPorts": [{ "Host": "user-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/auth/{everything}",
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
       "DownstreamPathTemplate": "/api/users/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5010 }],
+      "DownstreamHostAndPorts": [{ "Host": "user-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/users/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -18,28 +18,28 @@
     {
       "DownstreamPathTemplate": "/api/products/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5020 }],
+      "DownstreamHostAndPorts": [{ "Host": "product-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/products/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ]
     },
     {
       "DownstreamPathTemplate": "/api/categories/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5020 }],
+      "DownstreamHostAndPorts": [{ "Host": "product-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/categories/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
       "DownstreamPathTemplate": "/api/tags/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5020 }],
+      "DownstreamHostAndPorts": [{ "Host": "product-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/tags/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
       "DownstreamPathTemplate": "/api/cart/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5030 }],
+      "DownstreamHostAndPorts": [{ "Host": "cart-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/cart/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -47,7 +47,7 @@
     {
       "DownstreamPathTemplate": "/api/orders/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5040 }],
+      "DownstreamHostAndPorts": [{ "Host": "order-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/orders/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -55,7 +55,7 @@
     {
       "DownstreamPathTemplate": "/api/payments/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5050 }],
+      "DownstreamHostAndPorts": [{ "Host": "payment-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/payments/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -63,7 +63,7 @@
     {
       "DownstreamPathTemplate": "/api/notifications/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5060 }],
+      "DownstreamHostAndPorts": [{ "Host": "notification-service", "Port": 8080 }],
       "UpstreamPathTemplate": "/notifications/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     }

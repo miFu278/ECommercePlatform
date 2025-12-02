@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+option csharp_namespace = "ECommerce.Order.Grpc";
+
+package order;
+
+// Order gRPC Service - For inter-service communication
+service OrderGrpcService {
+  rpc GetOrderInfo (OrderInfoRequest) returns (OrderInfoResponse);
+  rpc UpdatePaymentStatus (UpdatePaymentStatusRequest) returns (UpdatePaymentStatusResponse);
+}
+
+// Messages
+message OrderInfoRequest {
+  string order_id = 1;
+}
+
+message OrderInfoResponse {
+  bool found = 1;
+  string id = 2;
+  string order_number = 3;
+  string user_id = 4;
+  string status = 5;
+  string payment_status = 6;
+  double subtotal = 7;
+  double shipping_cost = 8;
+  double tax = 9;
+  double discount = 10;
+  double total_amount = 11;
+  string currency = 12;
+  string shipping_full_name = 13;
+  string shipping_phone = 14;
+  string shipping_address = 15;
+  string shipping_city = 16;
+  string shipping_country = 17;
+  repeated OrderItemInfo items = 18;
+}
+
+message OrderItemInfo {
+  string product_id = 1;
+  string product_name = 2;
+  string sku = 3;
+  int32 quantity = 4;
+  double unit_price = 5;
+  double total_price = 6;
+}
+
+message UpdatePaymentStatusRequest {
+  string order_id = 1;
+  string payment_status = 2;
+  string payment_transaction_id = 3;
+}
+
+message UpdatePaymentStatusResponse {
+  bool success = 1;
+  string message = 2;
+}

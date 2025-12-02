@@ -1,3 +1,4 @@
+using ECommerce.EventBus.Abstractions;
 using ECommerce.EventBus.Events;
 using ECommerce.Order.Application.Interfaces;
 using ECommerce.Order.Domain.Enums;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Order.Application.EventHandlers;
 
-public class PaymentCompletedEventHandler
+public class PaymentCompletedEventHandler : IEventHandler<PaymentCompletedEvent>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentCompletedEventHandler> _logger;

@@ -1,10 +1,11 @@
+using ECommerce.EventBus.Abstractions;
 using ECommerce.EventBus.Events;
 using ECommerce.Notification.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Notification.Application.EventHandlers;
 
-public class PaymentCompletedEventHandler
+public class PaymentCompletedEventHandler : IEventHandler<PaymentCompletedEvent>
 {
     private readonly IEmailService _emailService;
     private readonly ILogger<PaymentCompletedEventHandler> _logger;
@@ -17,27 +18,29 @@ public class PaymentCompletedEventHandler
 
     public async Task HandleAsync(PaymentCompletedEvent @event)
     {
-        _logger.LogInformation("Handling PaymentCompletedEvent for Payment: {PaymentId}", @event.PaymentId);
+        _logger.LogInformation("Handling PaymentCompletedEvent for Payment: {PaymentId}, Order: {OrderId}", 
+            @event.PaymentId, @event.OrderId);
 
         try
         {
-            // TODO: Get user email and order number from services
-            var userEmail = "user@example.com"; // Placeholder
-            var orderNumber = "ORD20241124-0001"; // Placeholder
-            var paymentNumber = $"PAY{@event.PaymentId.ToString().Substring(0, 8)}";
+            // Get info from event - in production these would be populated
+            var userEmail = @event.UserEmail ?? "user@example.com";
+            var orderNumber = @event.OrderNumber ?? $"ORD-{@event.OrderId.ToString().Substring(0, 8)}";
+            var transactionId = @event.TransactionId ?? @event.PaymentId.ToString();
 
-            await _emailService.SendPaymentReceiptAsync(
+            await _emailService.SendPaymentConfirmationAsync(
                 userEmail,
                 orderNumber,
-                paymentNumber,
-                @event.Amount
+                @event.Amount,
+                @event.PaymentMethod ?? "Online Payment",
+                transactionId
             );
 
-            _logger.LogInformation("Payment receipt email sent for Payment: {PaymentId}", @event.PaymentId);
+            _logger.LogInformation("Payment confirmation email sent for Payment: {PaymentId}", @event.PaymentId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send payment receipt email for Payment: {PaymentId}", @event.PaymentId);
+            _logger.LogError(ex, "Failed to send payment confirmation email for Payment: {PaymentId}", @event.PaymentId);
             // Don't throw - notification failures shouldn't break the system
         }
     }

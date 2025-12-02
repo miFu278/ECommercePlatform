@@ -10,10 +10,12 @@ namespace ECommerce.Payment.API.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
+    private readonly ILogger<PaymentsController> _logger;
 
-    public PaymentsController(IPaymentService paymentService)
+    public PaymentsController(IPaymentService paymentService, ILogger<PaymentsController> logger)
     {
         _paymentService = paymentService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -145,14 +147,44 @@ public class PaymentsController : ControllerBase
     {
         try
         {
-            // TODO: Verify webhook signature
-            
+            _logger.LogInformation("PayOS Webhook received: Code={Code}, OrderCode={OrderCode}", 
+                webhook.Code, webhook.Data?.OrderCode);
+
+            // Verify webhook signature (PayOS uses checksum)
+            if (!string.IsNullOrEmpty(webhook.Signature))
+            {
+                // TODO: Implement signature verification with PayOS checksum key
+                // var isValid = VerifySignature(webhook);
+                // if (!isValid) return BadRequest(new { message = "Invalid signature" });
+            }
+
             if (webhook.Code == "00" && webhook.Data != null)
             {
-                // Payment successful
-                // Find payment by transaction ID
-                // Update status to Completed
+                // Payment successful - find payment by transaction ID (orderCode)
+                var transactionId = webhook.Data.OrderCode.ToString();
                 
+                // Find payment by provider transaction ID
+                var payments = await _paymentService.GetUserPaymentsAsync(Guid.Empty, 1, 1000);
+                var payment = payments.Items.FirstOrDefault(p => 
+                    p.ProviderTransactionId == transactionId || 
+                    p.PaymentNumber.Contains(transactionId));
+
+                if (payment != null)
+                {
+                    // Process the payment completion
+                    await _paymentService.ProcessPaymentAsync(new ProcessPaymentDto
+                    {
+                        PaymentId = payment.Id,
+                        ProviderTransactionId = transactionId
+                    });
+
+                    _logger.LogInformation("Payment {PaymentId} completed via webhook", payment.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("Payment not found for transaction: {TransactionId}", transactionId);
+                }
+
                 return Ok(new { message = "Webhook processed successfully" });
             }
 
@@ -160,8 +192,37 @@ public class PaymentsController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error processing PayOS webhook");
             return StatusCode(500, new { message = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// PayOS Return URL - Called when user returns from PayOS
+    /// </summary>
+    [HttpGet("return")]
+    public async Task<IActionResult> PayOSReturn(
+        [FromQuery] string code,
+        [FromQuery] string id,
+        [FromQuery] bool cancel,
+        [FromQuery] string status,
+        [FromQuery] long orderCode)
+    {
+        _logger.LogInformation("PayOS Return: Code={Code}, Status={Status}, OrderCode={OrderCode}, Cancel={Cancel}", 
+            code, status, orderCode, cancel);
+
+        if (cancel)
+        {
+            return Redirect($"/payment/cancelled?orderCode={orderCode}");
+        }
+
+        if (status == "PAID" || code == "00")
+        {
+            // Payment successful
+            return Redirect($"/payment/success?orderCode={orderCode}");
+        }
+
+        return Redirect($"/payment/failed?orderCode={orderCode}&status={status}");
     }
 
     private Guid GetCurrentUserId()

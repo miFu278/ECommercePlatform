@@ -1,10 +1,6 @@
-# Stop all infrastructure services
-Write-Host "🛑 Stopping E-Commerce Infrastructure..." -ForegroundColor Yellow
+# ECommerce Platform - Docker Stop Script
 
-docker-compose -f docker-compose.infrastructure.yml down
+Write-Host "Stopping all services..." -ForegroundColor Yellow
+docker-compose down
 
-Write-Host ""
-Write-Host "✅ All services stopped!" -ForegroundColor Green
-Write-Host ""
-Write-Host "💡 To remove all data, run:" -ForegroundColor Cyan
-Write-Host "   docker-compose -f docker-compose.infrastructure.yml down -v" -ForegroundColor White
+Write-Host "All services stopped." -ForegroundColor Green

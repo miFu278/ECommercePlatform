@@ -1,0 +1,150 @@
+# ECommerce Platform - Docker Compose
+# Sử dụng Cloud Databases (Supabase, MongoDB Atlas, Redis Cloud)
+#
+# Chạy: docker-compose up -d --build
+
+services:
+  # User Service - Port 5010
+  user-service:
+    build:
+      context: ..
+      dockerfile: src/Services/Users/ECommerce.User.API/Dockerfile
+    container_name: ecommerce-user-service
+    ports:
+      - "5010:8080"
+      - "5011:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;http://+:8081
+      - Kestrel__Endpoints__Http__Url=http://+:8080
+      - Kestrel__Endpoints__Grpc__Url=http://+:8081
+      - Kestrel__Endpoints__Grpc__Protocols=Http2
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Product Service - Port 5020
+  product-service:
+    build:
+      context: ..
+      dockerfile: src/Services/Product/ECommerce.Product.API/Dockerfile
+    container_name: ecommerce-product-service
+    ports:
+      - "5020:8080"
+      - "5021:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;http://+:8081
+      - Kestrel__Endpoints__Http__Url=http://+:8080
+      - Kestrel__Endpoints__Grpc__Url=http://+:8081
+      - Kestrel__Endpoints__Grpc__Protocols=Http2
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Shopping Cart Service - Port 5030
+  cart-service:
+    build:
+      context: ..
+      dockerfile: src/Services/ShoppingCart/ECommerce.ShoppingCart.API/Dockerfile
+    container_name: ecommerce-cart-service
+    ports:
+      - "5030:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Services__ProductService__Url=http://product-service:8080
+      - Services__ProductService__GrpcUrl=http://product-service:8081
+    depends_on:
+      - product-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Order Service - Port 5040
+  order-service:
+    build:
+      context: ..
+      dockerfile: src/Services/Order/ECommerce.Order.API/Dockerfile
+    container_name: ecommerce-order-service
+    ports:
+      - "5040:8080"
+      - "5041:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;http://+:8081
+      - Kestrel__Endpoints__Http__Url=http://+:8080
+      - Kestrel__Endpoints__Grpc__Url=http://+:8081
+      - Kestrel__Endpoints__Grpc__Protocols=Http2
+      - Services__Product__RestUrl=http://product-service:8080
+      - Services__Product__GrpcUrl=http://product-service:8081
+      - Services__User__RestUrl=http://user-service:8080
+      - Services__User__GrpcUrl=http://user-service:8081
+      - Services__ShoppingCart=http://cart-service:8080
+      - Services__Payment=http://payment-service:8080
+    depends_on:
+      - user-service
+      - product-service
+      - cart-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Payment Service - Port 5050
+  payment-service:
+    build:
+      context: ..
+      dockerfile: src/Services/Payment/ECommerce.Payment.API/Dockerfile
+    container_name: ecommerce-payment-service
+    ports:
+      - "5050:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Services__Order__Grpc=http://order-service:8081
+    depends_on:
+      - order-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Notification Service - Port 5060
+  notification-service:
+    build:
+      context: ..
+      dockerfile: src/Services/Notification/ECommerce.Notification.API/Dockerfile
+    container_name: ecommerce-notification-service
+    ports:
+      - "5060:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # API Gateway - Port 5000
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: src/ApiGateway/Dockerfile
+    container_name: ecommerce-api-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - user-service
+      - product-service
+      - cart-service
+      - order-service
+      - payment-service
+      - notification-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+networks:
+  ecommerce-network:
+    driver: bridge
