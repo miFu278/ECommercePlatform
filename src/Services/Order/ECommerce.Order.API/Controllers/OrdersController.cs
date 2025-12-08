@@ -36,9 +36,9 @@ public class OrdersController : ControllerBase
         var userId = GetCurrentUserId();
         var order = await _orderService.CreateOrderAsync(userId, dto);
         
-        // If payment method is online payment (transfer), create payment link
+        // If payment method is banking, create payment link
         string? paymentUrl = null;
-        if (dto.PaymentMethod?.ToLower() == "transfer")
+        if (dto.PaymentMethod == PaymentMethod.Banking)
         {
             try
             {

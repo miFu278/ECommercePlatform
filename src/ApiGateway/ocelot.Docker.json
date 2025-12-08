@@ -8,10 +8,10 @@
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
-      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamPathTemplate": "/api/user/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "user-service", "Port": 8080 }],
-      "UpstreamPathTemplate": "/users/{everything}",
+      "UpstreamPathTemplate": "/user/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },

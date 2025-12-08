@@ -1,33 +1,23 @@
 # E-Commerce Platform - API Documentation
 
-## Table of Contents
-1. [API Overview](#api-overview)
-2. [Authentication](#authentication)
-3. [User Service API](#user-service-api)
-4. [Product Catalog Service API](#product-catalog-service-api)
-5. [Shopping Cart Service API](#shopping-cart-service-api)
-6. [Order Service API](#order-service-api)
-7. [Payment Service API](#payment-service-api)
-8. [Notification Service API](#notification-service-api)
-9. [Error Handling](#error-handling)
-10. [Rate Limiting](#rate-limiting)
-11. [Webhooks](#webhooks)
+## Mục lục
+1. [Tổng quan API](#tổng-quan-api)
+2. [Authentication Service](#authentication-service)
+3. [User Service](#user-service)
+4. [Product Service](#product-service)
+5. [Shopping Cart Service](#shopping-cart-service)
+6. [Order Service](#order-service)
+7. [Payment Service](#payment-service)
+8. [Xử lý lỗi](#xử-lý-lỗi)
 
 ---
 
-## API Overview
+## Tổng quan API
 
 ### Base URL
 ```
-Development: http://localhost:5000/api
-Production:  https://api.ecommerce.com/api
-```
-
-### API Versioning
-All APIs are versioned using URL path versioning:
-```
-/api/v1/users
-/api/v2/users
+Development: http://localhost:5000
+Production:  https://api.ecommerce.com
 ```
 
 ### Common Headers
@@ -35,8 +25,6 @@ All APIs are versioned using URL path versioning:
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {access_token}
-X-Correlation-Id: {unique-request-id}
-X-API-Version: v1
 ```
 
 ### Standard Response Format
@@ -44,86 +32,59 @@ X-API-Version: v1
 **Success Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    // Response data
-  },
-  "message": "Operation completed successfully",
-  "timestamp": "2025-11-02T10:30:00Z"
+  "data": { },
+  "message": "Success"
 }
 ```
 
 **Error Response:**
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "VALIDATION_ERROR",
-      "message": "Invalid email format",
-      "field": "email"
-    }
-  ],
-  "message": "Request validation failed",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "abc123-def456-ghi789"
-}
-```
-
-### Pagination
-```json
-{
-  "success": true,
-  "data": {
-    "items": [...],
-    "pageNumber": 1,
-    "pageSize": 20,
-    "totalPages": 5,
-    "totalCount": 95,
-    "hasPreviousPage": false,
-    "hasNextPage": true
-  }
+  "message": "Error message"
 }
 ```
 
 ---
 
-## Authentication
+## Authentication Service
 
-### OAuth 2.0 / OpenID Connect Flow
+### Base Path: `/api/auth`
 
-#### 1. Register User
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
+### 1. Register User
+**Endpoint:** `POST /api/auth/register`
 
+**Request Body:**
+```json
 {
   "email": "user@example.com",
   "password": "SecurePass123!",
+  "username": "johndoe",
   "firstName": "John",
-  "lastName": "Doe",
-  "phoneNumber": "+1234567890"
+  "lastName": "Doe"
 }
 ```
 
-**Response (201 Created):**
+**Response (200 OK):**
 ```json
 {
-  "success": true,
-  "data": {
-    "userId": "123e4567-e89b-12d3-a456-426614174000",
+  "message": "Registration successful. Please check your email to verify your account.",
+  "user": {
+    "id": "guid",
     "email": "user@example.com",
-    "emailVerificationRequired": true
-  },
-  "message": "Registration successful. Please verify your email."
+    "username": "johndoe"
+  }
 }
 ```
 
-#### 2. Login
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
+**Rate Limit:** Enabled
 
+---
+
+### 2. Login
+**Endpoint:** `POST /api/auth/login`
+
+**Request Body:**
+```json
 {
   "email": "user@example.com",
   "password": "SecurePass123!"
@@ -133,135 +94,196 @@ Content-Type: application/json
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "refresh_token_here",
-    "expiresIn": 3600,
-    "tokenType": "Bearer",
-    "user": {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
-      "email": "user@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
-      "roles": ["Customer"]
-    }
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "refresh_token_here",
+  "expiresIn": 3600,
+  "user": {
+    "id": "guid",
+    "email": "user@example.com",
+    "username": "johndoe",
+    "role": "Customer"
   }
 }
 ```
 
-#### 3. Refresh Token
-```http
-POST /api/v1/auth/refresh
-Content-Type: application/json
-
-{
-  "refreshToken": "refresh_token_here"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "accessToken": "new_access_token",
-    "refreshToken": "new_refresh_token",
-    "expiresIn": 3600,
-    "tokenType": "Bearer"
-  }
-}
-```
-
-#### 4. Logout
-```http
-POST /api/v1/auth/logout
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "refreshToken": "refresh_token_here"
-}
-```
-
-**Response (204 No Content)**
+**Rate Limit:** Enabled
 
 ---
 
-## User Service API
+### 3. Refresh Token
+**Endpoint:** `POST /api/auth/refresh-token`
 
-### Base Path: `/api/v1/users`
-
-### Get User Profile
-```http
-GET /api/v1/users/profile
-Authorization: Bearer {access_token}
+**Request Body:**
+```json
+{
+  "refreshToken": "refresh_token_here"
+}
 ```
 
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "user@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "phoneNumber": "+1234567890",
-    "dateOfBirth": "1990-01-15",
-    "addresses": [
-      {
-        "id": "addr-001",
-        "street": "123 Main St",
-        "city": "New York",
-        "state": "NY",
-        "zipCode": "10001",
-        "country": "USA",
-        "isDefault": true
-      }
-    ],
-    "createdAt": "2024-01-01T00:00:00Z",
-    "updatedAt": "2025-11-02T10:30:00Z"
-  }
+  "accessToken": "new_access_token",
+  "refreshToken": "new_refresh_token",
+  "expiresIn": 3600
 }
 ```
 
-### Update User Profile
-```http
-PUT /api/v1/users/profile
-Authorization: Bearer {access_token}
-Content-Type: application/json
+---
 
+### 4. Logout
+**Endpoint:** `POST /api/auth/logout`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
 {
+  "refreshToken": "refresh_token_here"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+### 5. Verify Email
+**Endpoint:** `GET /api/auth/verify-email?token={token}`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Email verified successfully"
+}
+```
+
+---
+
+### 6. Forgot Password
+**Endpoint:** `POST /api/auth/forgot-password`
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "If the email exists, a password reset link has been sent"
+}
+```
+
+**Rate Limit:** Enabled
+
+---
+
+### 7. Reset Password
+**Endpoint:** `POST /api/auth/reset-password`
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "token": "reset_token_from_email",
+  "newPassword": "NewPass789!"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+**Rate Limit:** Enabled
+
+---
+
+### 8. Resend Verification Email
+**Endpoint:** `POST /api/auth/resend-verification-email`
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "If the email exists and is not verified, a verification link has been sent"
+}
+```
+
+---
+
+## User Service
+
+### Base Path: `/api/user`
+
+### 1. Get User Profile
+**Endpoint:** `GET /api/user/profile`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "email": "user@example.com",
+  "username": "johndoe",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": "+1234567890",
+  "role": "Customer",
+  "isEmailVerified": true,
+  "createdAt": "2024-01-01T00:00:00Z"
+}
+```
+
+---
+
+### 2. Update User Profile
+**Endpoint:** `PUT /api/user/profile`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "username": "johndoe_updated",
   "firstName": "John",
   "lastName": "Smith",
-  "phoneNumber": "+1234567890",
-  "dateOfBirth": "1990-01-15"
+  "phoneNumber": "+1234567890"
 }
 ```
 
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "user@example.com",
-    "firstName": "John",
-    "lastName": "Smith",
-    "phoneNumber": "+1234567890",
-    "dateOfBirth": "1990-01-15"
-  },
-  "message": "Profile updated successfully"
+  "id": "guid",
+  "email": "user@example.com",
+  "username": "johndoe_updated",
+  "firstName": "John",
+  "lastName": "Smith"
 }
 ```
 
-### Change Password
-```http
-POST /api/v1/users/change-password
-Authorization: Bearer {access_token}
-Content-Type: application/json
+---
 
+### 3. Change Password
+**Endpoint:** `POST /api/user/change-password`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
 {
   "currentPassword": "OldPass123!",
   "newPassword": "NewPass456!",
@@ -272,63 +294,136 @@ Content-Type: application/json
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "message": "Password changed successfully"
+  "message": "Password changed successfully. Please login again."
 }
 ```
 
-### Forgot Password
-```http
-POST /api/v1/users/forgot-password
-Content-Type: application/json
+---
 
+### 4. Delete Account
+**Endpoint:** `DELETE /api/user/account`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
 {
-  "email": "user@example.com"
+  "password": "CurrentPass123!"
 }
 ```
 
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "message": "Password reset link sent to your email"
+  "message": "Account deleted successfully"
 }
 ```
 
-### Reset Password
-```http
-POST /api/v1/users/reset-password
-Content-Type: application/json
+---
 
+### 5. Get User by ID (Admin Only)
+**Endpoint:** `GET /api/user/{id}`  
+**Authorization:** Bearer Token Required (Admin Role)
+
+**Response (200 OK):**
+```json
 {
+  "id": "guid",
   "email": "user@example.com",
-  "token": "reset_token_from_email",
-  "newPassword": "NewPass789!",
-  "confirmPassword": "NewPass789!"
+  "username": "johndoe",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "Customer"
 }
 ```
+
+---
+
+### 6. Get All Users (Admin Only)
+**Endpoint:** `GET /api/user?pageNumber=1&pageSize=10`  
+**Authorization:** Bearer Token Required (Admin Role)
+
+**Query Parameters:**
+- `pageNumber` (default: 1)
+- `pageSize` (default: 10)
 
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "message": "Password reset successfully"
+  "items": [
+    {
+      "id": "guid",
+      "email": "user@example.com",
+      "username": "johndoe"
+    }
+  ],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 100
 }
 ```
 
-### Manage Addresses
+---
 
-#### Add Address
-```http
-POST /api/v1/users/addresses
-Authorization: Bearer {access_token}
-Content-Type: application/json
+## Address Management
 
+### Base Path: `/api/user/address`
+
+### 1. Get All Addresses
+**Endpoint:** `GET /api/user/address`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "guid",
+    "recipientName": "John Doe",
+    "phoneNumber": "+1234567890",
+    "addressLine1": "123 Main St",
+    "addressLine2": "Apt 4B",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "USA",
+    "isDefault": true
+  }
+]
+```
+
+---
+
+### 2. Get Address by ID
+**Endpoint:** `GET /api/user/address/{id}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
 {
-  "street": "456 Oak Ave",
-  "city": "Los Angeles",
-  "state": "CA",
-  "zipCode": "90001",
+  "id": "guid",
+  "recipientName": "John Doe",
+  "phoneNumber": "+1234567890",
+  "addressLine1": "123 Main St",
+  "city": "New York",
+  "isDefault": true
+}
+```
+
+---
+
+### 3. Create Address
+**Endpoint:** `POST /api/user/address`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "recipientName": "John Doe",
+  "phoneNumber": "+1234567890",
+  "addressLine1": "123 Main St",
+  "addressLine2": "Apt 4B",
+  "city": "New York",
+  "state": "NY",
+  "postalCode": "10001",
   "country": "USA",
   "isDefault": false
 }
@@ -337,170 +432,1252 @@ Content-Type: application/json
 **Response (201 Created):**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "addr-002",
-    "street": "456 Oak Ave",
-    "city": "Los Angeles",
-    "state": "CA",
-    "zipCode": "90001",
-    "country": "USA",
-    "isDefault": false
-  }
+  "id": "guid",
+  "recipientName": "John Doe",
+  "addressLine1": "123 Main St",
+  "isDefault": false
 }
 ```
 
-#### Update Address
-```http
-PUT /api/v1/users/addresses/{addressId}
-Authorization: Bearer {access_token}
-Content-Type: application/json
+---
 
+### 4. Update Address
+**Endpoint:** `PUT /api/user/address/{id}`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
 {
-  "street": "456 Oak Avenue",
+  "recipientName": "John Smith",
+  "phoneNumber": "+1234567890",
+  "addressLine1": "456 Oak Ave",
   "city": "Los Angeles",
   "state": "CA",
-  "zipCode": "90001",
-  "country": "USA",
-  "isDefault": true
+  "postalCode": "90001",
+  "country": "USA"
 }
 ```
 
-#### Delete Payment Method
-```http
-DELETE /api/v1/payments/methods/{methodId}
-Authorization: Bearer {access_token}
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "recipientName": "John Smith",
+  "addressLine1": "456 Oak Ave"
+}
 ```
+
+---
+
+### 5. Delete Address
+**Endpoint:** `DELETE /api/user/address/{id}`  
+**Authorization:** Bearer Token Required
 
 **Response (204 No Content)**
 
 ---
 
-## Notification Service API
-
-### Base Path: `/api/v1/notifications`
-
-### Send Email Notification
-```http
-POST /api/v1/notifications/email
-Authorization: Bearer {service_access_token}
-Content-Type: application/json
-
-{
-  "to": "user@example.com",
-  "subject": "Order Confirmation",
-  "templateId": "order-confirmation",
-  "templateData": {
-    "orderNumber": "ORD-2025-000100",
-    "customerName": "John Doe",
-    "orderTotal": 863.98,
-    "orderItems": [...]
-  }
-}
-```
-
-**Response (202 Accepted):**
-```json
-{
-  "success": true,
-  "data": {
-    "notificationId": "notif-123",
-    "status": "queued",
-    "queuedAt": "2025-11-02T10:30:00Z"
-  },
-  "message": "Email notification queued for delivery"
-}
-```
-
-### Send SMS Notification
-```http
-POST /api/v1/notifications/sms
-Authorization: Bearer {service_access_token}
-Content-Type: application/json
-
-{
-  "to": "+1234567890",
-  "message": "Your order ORD-2025-000100 has been shipped!",
-  "templateId": "order-shipped"
-}
-```
-
-**Response (202 Accepted):**
-```json
-{
-  "success": true,
-  "data": {
-    "notificationId": "notif-124",
-    "status": "queued",
-    "queuedAt": "2025-11-02T10:30:00Z"
-  }
-}
-```
-
-### Get Notification History
-```http
-GET /api/v1/notifications/history?pageNumber=1&pageSize=20&type=email
-Authorization: Bearer {access_token}
-```
-
-**Query Parameters:**
-- `pageNumber` (default: 1)
-- `pageSize` (default: 20)
-- `type` (optional: email, sms, push)
-- `status` (optional: queued, sent, failed, delivered)
+### 6. Set Default Address
+**Endpoint:** `PUT /api/user/address/{id}/set-default`  
+**Authorization:** Bearer Token Required
 
 **Response (200 OK):**
 ```json
 {
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "id": "notif-123",
-        "type": "email",
-        "to": "user@example.com",
-        "subject": "Order Confirmation",
-        "status": "delivered",
-        "queuedAt": "2025-11-02T10:30:00Z",
-        "sentAt": "2025-11-02T10:30:15Z",
-        "deliveredAt": "2025-11-02T10:30:20Z"
-      }
-    ],
-    "pageNumber": 1,
-    "pageSize": 20,
-    "totalCount": 156
-  }
-}
-```
-
-### Get Notification Status
-```http
-GET /api/v1/notifications/{notificationId}
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "notif-123",
-    "type": "email",
-    "to": "user@example.com",
-    "subject": "Order Confirmation",
-    "status": "delivered",
-    "attempts": 1,
-    "queuedAt": "2025-11-02T10:30:00Z",
-    "sentAt": "2025-11-02T10:30:15Z",
-    "deliveredAt": "2025-11-02T10:30:20Z",
-    "error": null
-  }
+  "id": "guid",
+  "isDefault": true
 }
 ```
 
 ---
 
-## Error Handling
+## Session Management
+
+### Base Path: `/api/user/session`
+
+### 1. Get All Sessions
+**Endpoint:** `GET /api/user/session?currentRefreshToken={token}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "guid",
+    "deviceInfo": "Chrome on Windows",
+    "ipAddress": "192.168.1.1",
+    "location": "New York, USA",
+    "isCurrent": true,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "lastActivityAt": "2024-01-02T10:30:00Z"
+  }
+]
+```
+
+---
+
+### 2. Revoke Session
+**Endpoint:** `DELETE /api/user/session/{sessionId}`  
+**Authorization:** Bearer Token Required
+
+**Response (204 No Content)**
+
+---
+
+### 3. Revoke All Sessions
+**Endpoint:** `POST /api/user/session/revoke-all`  
+**Authorization:** Bearer Token Required
+
+**Request Body (Optional):**
+```json
+{
+  "exceptRefreshToken": "current_refresh_token"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "All other sessions have been revoked"
+}
+```
+
+---
+
+## Product Service
+
+### Base Path: `/api/products`
+
+### 1. Get All Products (Search & Filter)
+**Endpoint:** `GET /api/products`
+
+**Query Parameters:**
+- `keyword` - Tìm kiếm theo tên
+- `categoryId` - Lọc theo danh mục
+- `minPrice` - Giá tối thiểu
+- `maxPrice` - Giá tối đa
+- `tags` - Lọc theo tags
+- `inStock` - Chỉ hiển thị sản phẩm còn hàng
+- `sortBy` - Sắp xếp (name, price, createdAt)
+- `sortDescending` - Sắp xếp giảm dần
+- `pageNumber` - Trang (default: 1)
+- `pageSize` - Số items/trang (default: 10)
+
+**Response (200 OK):**
+```json
+{
+  "items": [
+    {
+      "id": "string",
+      "name": "Wireless Headphones",
+      "slug": "wireless-headphones",
+      "description": "High-quality headphones",
+      "price": 299.99,
+      "compareAtPrice": 399.99,
+      "sku": "WH-001",
+      "stockQuantity": 150,
+      "imageUrl": "https://cdn.example.com/image.jpg",
+      "categoryName": "Electronics",
+      "tags": ["wireless", "bluetooth"],
+      "isFeatured": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 100,
+  "totalPages": 10
+}
+```
+
+---
+
+### 2. Get Product by ID
+**Endpoint:** `GET /api/products/{id}`
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "Wireless Headphones",
+  "slug": "wireless-headphones",
+  "description": "High-quality noise-canceling headphones",
+  "price": 299.99,
+  "compareAtPrice": 399.99,
+  "sku": "WH-001",
+  "stockQuantity": 150,
+  "images": [
+    "https://cdn.example.com/image1.jpg",
+    "https://cdn.example.com/image2.jpg"
+  ],
+  "category": {
+    "id": "string",
+    "name": "Electronics"
+  },
+  "tags": ["wireless", "bluetooth", "noise-canceling"],
+  "isFeatured": true,
+  "createdAt": "2024-01-01T00:00:00Z",
+  "updatedAt": "2024-01-02T00:00:00Z"
+}
+```
+
+---
+
+### 3. Get Product by Slug
+**Endpoint:** `GET /api/products/slug/{slug}`
+
+**Response (200 OK):** Same as Get Product by ID
+
+---
+
+### 4. Search Products
+**Endpoint:** `GET /api/products/search?query={keyword}`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Wireless Headphones",
+    "slug": "wireless-headphones",
+    "price": 299.99,
+    "imageUrl": "https://cdn.example.com/image.jpg"
+  }
+]
+```
+
+---
+
+### 5. Get Featured Products
+**Endpoint:** `GET /api/products/featured?limit=10`
+
+**Query Parameters:**
+- `limit` - Số lượng sản phẩm (1-50, default: 10)
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Wireless Headphones",
+    "price": 299.99,
+    "imageUrl": "https://cdn.example.com/image.jpg"
+  }
+]
+```
+
+---
+
+### 6. Get Related Products
+**Endpoint:** `GET /api/products/{id}/related?limit=5`
+
+**Query Parameters:**
+- `limit` - Số lượng sản phẩm (1-20, default: 5)
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Similar Product",
+    "price": 249.99,
+    "imageUrl": "https://cdn.example.com/image.jpg"
+  }
+]
+```
+
+---
+
+### 7. Get Products by Category
+**Endpoint:** `GET /api/products/category/{categoryId}`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Product Name",
+    "price": 299.99
+  }
+]
+```
+
+---
+
+### 8. Create Product (Admin)
+**Endpoint:** `POST /api/products`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "name": "Smart Watch Pro",
+  "slug": "smart-watch-pro",
+  "description": "Advanced fitness tracking smartwatch",
+  "price": 399.99,
+  "compareAtPrice": 499.99,
+  "sku": "SW-PRO-001",
+  "categoryId": "string",
+  "stockQuantity": 100,
+  "images": [
+    "https://cdn.example.com/image.jpg"
+  ],
+  "tags": ["smartwatch", "fitness"],
+  "isFeatured": false
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "string",
+  "name": "Smart Watch Pro",
+  "slug": "smart-watch-pro",
+  "price": 399.99
+}
+```
+
+---
+
+### 9. Update Product (Admin)
+**Endpoint:** `PUT /api/products/{id}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "name": "Smart Watch Pro - Updated",
+  "description": "Updated description",
+  "price": 379.99,
+  "stockQuantity": 120
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "Smart Watch Pro - Updated",
+  "price": 379.99
+}
+```
+
+---
+
+### 10. Update Stock (Admin)
+**Endpoint:** `PATCH /api/products/{id}/stock`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "quantity": 200
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Stock updated successfully",
+  "quantity": 200
+}
+```
+
+---
+
+### 11. Delete Product (Admin)
+**Endpoint:** `DELETE /api/products/{id}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Response (204 No Content)**
+
+---
+
+### 12. Upload Product Image (Admin)
+**Endpoint:** `POST /api/products/{id}/images`  
+**Authorization:** Bearer Token Required (Admin)  
+**Content-Type:** multipart/form-data
+
+**Form Data:**
+- `file` - Image file
+
+**Response (200 OK):**
+```json
+{
+  "message": "Image uploaded successfully",
+  "imageUrl": "https://cdn.example.com/image.jpg"
+}
+```
+
+---
+
+### 13. Delete Product Image (Admin)
+**Endpoint:** `DELETE /api/products/{id}/images?imageUrl={url}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Response (200 OK):**
+```json
+{
+  "message": "Image deleted successfully"
+}
+```
+
+---
+
+### 14. Seed Products (Development)
+**Endpoint:** `POST /api/products/seed`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Products seeded successfully"
+}
+```
+
+---
+
+## Categories
+
+### Base Path: `/api/categories`
+
+### 1. Get All Categories
+**Endpoint:** `GET /api/categories`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Electronics",
+    "slug": "electronics",
+    "description": "Electronic devices",
+    "parentId": null,
+    "imageUrl": "https://cdn.example.com/category.jpg",
+    "displayOrder": 1,
+    "isActive": true
+  }
+]
+```
+
+---
+
+### 2. Get Root Categories
+**Endpoint:** `GET /api/categories/root`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Electronics",
+    "slug": "electronics"
+  }
+]
+```
+
+---
+
+### 3. Get Category by ID
+**Endpoint:** `GET /api/categories/{id}`
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "Electronics",
+  "slug": "electronics",
+  "description": "Electronic devices",
+  "parentId": null
+}
+```
+
+---
+
+### 4. Get Child Categories
+**Endpoint:** `GET /api/categories/{parentId}/children`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "Audio",
+    "slug": "audio",
+    "parentId": "parent-id"
+  }
+]
+```
+
+---
+
+### 5. Create Category (Admin)
+**Endpoint:** `POST /api/categories`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "name": "Smart Home",
+  "slug": "smart-home",
+  "description": "Smart home devices",
+  "parentId": null,
+  "imageUrl": "https://cdn.example.com/category.jpg",
+  "displayOrder": 5
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "string",
+  "name": "Smart Home",
+  "slug": "smart-home"
+}
+```
+
+---
+
+### 6. Update Category (Admin)
+**Endpoint:** `PUT /api/categories/{id}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "name": "Smart Home - Updated",
+  "description": "Updated description"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "Smart Home - Updated"
+}
+```
+
+---
+
+### 7. Delete Category (Admin)
+**Endpoint:** `DELETE /api/categories/{id}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Response (204 No Content)**
+
+---
+
+### 8. Seed Categories (Development)
+**Endpoint:** `POST /api/categories/seed`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Categories seeded successfully"
+}
+```
+
+---
+
+## Tags
+
+### Base Path: `/api/tags`
+
+### 1. Get All Tags
+**Endpoint:** `GET /api/tags`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "string",
+    "name": "wireless",
+    "slug": "wireless",
+    "productCount": 45
+  }
+]
+```
+
+---
+
+### 2. Get Tag by ID
+**Endpoint:** `GET /api/tags/{id}`
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "wireless",
+  "slug": "wireless"
+}
+```
+
+---
+
+### 3. Get Tag by Name
+**Endpoint:** `GET /api/tags/name/{name}`
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "wireless",
+  "slug": "wireless"
+}
+```
+
+---
+
+### 4. Create Tag (Admin)
+**Endpoint:** `POST /api/tags`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "name": "eco-friendly",
+  "slug": "eco-friendly"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "string",
+  "name": "eco-friendly",
+  "slug": "eco-friendly"
+}
+```
+
+---
+
+### 5. Update Tag (Admin)
+**Endpoint:** `PUT /api/tags/{id}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "name": "eco-friendly-updated",
+  "slug": "eco-friendly-updated"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "string",
+  "name": "eco-friendly-updated"
+}
+```
+
+---
+
+### 6. Delete Tag (Admin)
+**Endpoint:** `DELETE /api/tags/{id}`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Response (204 No Content)**
+
+---
+
+## Images
+
+### Base Path: `/api/images`
+
+### 1. Upload Image
+**Endpoint:** `POST /api/images/upload?folder=products`  
+**Content-Type:** multipart/form-data
+
+**Form Data:**
+- `file` - Image file
+
+**Query Parameters:**
+- `folder` - Folder name (default: "products")
+
+**Response (200 OK):**
+```json
+{
+  "url": "https://cdn.example.com/products/image.jpg",
+  "message": "Upload successful"
+}
+```
+
+---
+
+### 2. Delete Image
+**Endpoint:** `DELETE /api/images?publicId={publicId}`
+
+**Query Parameters:**
+- `publicId` - Public ID of the image
+
+**Response (200 OK):**
+```json
+{
+  "message": "Image deleted successfully"
+}
+```
+
+---
+
+## Shopping Cart Service
+
+### Base Path: `/api/cart`
+
+### 1. Get Cart
+**Endpoint:** `GET /api/cart`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+{
+  "userId": "guid",
+  "items": [
+    {
+      "productId": "guid",
+      "productName": "Wireless Headphones",
+      "productImage": "https://cdn.example.com/image.jpg",
+      "price": 299.99,
+      "quantity": 2,
+      "subtotal": 599.98
+    }
+  ],
+  "totalItems": 2,
+  "totalPrice": 599.98,
+  "updatedAt": "2024-01-02T10:30:00Z"
+}
+```
+
+---
+
+### 2. Add Item to Cart
+**Endpoint:** `POST /api/cart/items`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "productId": "guid",
+  "quantity": 1
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "userId": "guid",
+  "items": [...],
+  "totalItems": 3,
+  "totalPrice": 899.97
+}
+```
+
+---
+
+### 3. Update Cart Item
+**Endpoint:** `PUT /api/cart/items/{productId}`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "quantity": 3
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "userId": "guid",
+  "items": [...],
+  "totalItems": 4,
+  "totalPrice": 1199.96
+}
+```
+
+---
+
+### 4. Remove Item from Cart
+**Endpoint:** `DELETE /api/cart/items/{productId}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+{
+  "userId": "guid",
+  "items": [...],
+  "totalItems": 1,
+  "totalPrice": 299.99
+}
+```
+
+---
+
+### 5. Clear Cart
+**Endpoint:** `DELETE /api/cart`  
+**Authorization:** Bearer Token Required
+
+**Response (204 No Content)**
+
+---
+
+### 6. Merge Carts
+**Endpoint:** `POST /api/cart/merge`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "anonymousUserId": "guid"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "merged": true
+}
+```
+
+---
+
+## Order Service
+
+### Base Path: `/api/orders`
+
+### 1. Create Order
+**Endpoint:** `POST /api/orders`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "shippingAddressId": "guid",
+  "paymentMethod": 0,
+  "notes": "Please deliver between 2-5 PM"
+}
+```
+
+**PaymentMethod Enum:**
+- `0` - COD (Cash on Delivery)
+- `1` - Banking (Online Payment)
+
+**Response (201 Created):**
+```json
+{
+  "id": "guid",
+  "orderNumber": "ORD-2025-000100",
+  "status": "Pending",
+  "totalAmount": 863.98,
+  "paymentUrl": "https://payment.provider.com/checkout/xyz"
+}
+```
+
+---
+
+### 2. Get Order by ID
+**Endpoint:** `GET /api/orders/{id}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "orderNumber": "ORD-2025-000100",
+  "userId": "guid",
+  "status": "Shipped",
+  "items": [
+    {
+      "productId": "guid",
+      "productName": "Wireless Headphones",
+      "sku": "WH-001",
+      "price": 299.99,
+      "quantity": 2,
+      "subtotal": 599.98
+    }
+  ],
+  "subtotal": 999.97,
+  "discount": 0,
+  "tax": 79.99,
+  "shippingCost": 0,
+  "totalAmount": 1079.96,
+  "shippingAddress": {
+    "recipientName": "John Doe",
+    "phoneNumber": "+1234567890",
+    "addressLine1": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "USA"
+  },
+  "paymentMethod": "Banking",
+  "paymentStatus": "Paid",
+  "notes": "Please deliver between 2-5 PM",
+  "createdAt": "2025-11-02T10:30:00Z",
+  "updatedAt": "2025-11-02T16:00:00Z"
+}
+```
+
+---
+
+### 3. Get Order by Order Number
+**Endpoint:** `GET /api/orders/number/{orderNumber}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):** Same as Get Order by ID
+
+---
+
+### 4. Get My Orders
+**Endpoint:** `GET /api/orders/my-orders?page=1&pageSize=10`  
+**Authorization:** Bearer Token Required
+
+**Query Parameters:**
+- `page` (default: 1)
+- `pageSize` (default: 10)
+
+**Response (200 OK):**
+```json
+{
+  "items": [
+    {
+      "id": "guid",
+      "orderNumber": "ORD-2025-000100",
+      "status": "Shipped",
+      "totalAmount": 863.98,
+      "createdAt": "2025-11-02T10:30:00Z"
+    }
+  ],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 47,
+  "totalPages": 5
+}
+```
+
+---
+
+### 5. Get All Orders (Admin)
+**Endpoint:** `GET /api/orders?page=1&pageSize=10`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Query Parameters:**
+- `page` (default: 1)
+- `pageSize` (default: 10)
+
+**Response (200 OK):**
+```json
+{
+  "items": [...],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 500,
+  "totalPages": 50
+}
+```
+
+---
+
+### 6. Get Orders by Status (Admin)
+**Endpoint:** `GET /api/orders/status/{status}?page=1&pageSize=10`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Status Enum:**
+- `Pending` - 0
+- `Paid` - 1
+- `Processing` - 2
+- `Shipped` - 3
+- `Delivered` - 4
+- `Cancelled` - 5
+
+**Response (200 OK):**
+```json
+{
+  "items": [...],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 50
+}
+```
+
+---
+
+### 7. Update Order Status (Admin)
+**Endpoint:** `PATCH /api/orders/{id}/status`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "status": 3,
+  "notes": "Order shipped via FedEx"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "orderNumber": "ORD-2025-000100",
+  "status": "Shipped",
+  "updatedAt": "2025-11-02T16:00:00Z"
+}
+```
+
+---
+
+### 8. Cancel Order
+**Endpoint:** `POST /api/orders/{id}/cancel`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "reason": "Changed my mind"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Order cancelled successfully"
+}
+```
+
+---
+
+### 9. Get Order Statistics (Admin)
+**Endpoint:** `GET /api/orders/statistics`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Response (200 OK):**
+```json
+{
+  "totalOrders": 500,
+  "pendingOrders": 45,
+  "processingOrders": 30,
+  "shippedOrders": 25,
+  "deliveredOrders": 380,
+  "cancelledOrders": 20,
+  "totalRevenue": 450000.00,
+  "averageOrderValue": 900.00
+}
+```
+
+---
+
+### 10. Get Dashboard Data (Admin)
+**Endpoint:** `GET /api/orders/dashboard`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Response (200 OK):**
+```json
+{
+  "todayOrders": 15,
+  "todayRevenue": 13500.00,
+  "weekOrders": 105,
+  "weekRevenue": 94500.00,
+  "monthOrders": 450,
+  "monthRevenue": 405000.00,
+  "recentOrders": [...]
+}
+```
+
+---
+
+## Payment Service
+
+### Base Path: `/api/payments`
+
+### 1. Create Payment
+**Endpoint:** `POST /api/payments`  
+**Authorization:** Bearer Token Required
+
+**Request Body:**
+```json
+{
+  "orderId": "guid",
+  "method": 1,
+  "paymentToken": null
+}
+```
+
+**Payment Method Enum:**
+- `0` - COD (Cash on Delivery)
+- `1` - Online (Banking/Card)
+
+**Response (201 Created):**
+```json
+{
+  "id": "guid",
+  "paymentNumber": "PAY-2025-000100",
+  "orderId": "guid",
+  "userId": "guid",
+  "amount": 863.98,
+  "method": "Online",
+  "status": "Pending",
+  "errorMessage": "https://payment.provider.com/checkout/xyz",
+  "providerTransactionId": "txn_abc123",
+  "createdAt": "2025-11-02T10:35:00Z"
+}
+```
+
+**Note:** `errorMessage` field temporarily contains PayOS checkout URL for online payments.
+
+---
+
+### 2. Get Payment by ID
+**Endpoint:** `GET /api/payments/{id}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "paymentNumber": "PAY-2025-000100",
+  "orderId": "guid",
+  "userId": "guid",
+  "amount": 863.98,
+  "method": "Online",
+  "status": "Completed",
+  "providerTransactionId": "txn_abc123",
+  "createdAt": "2025-11-02T10:35:00Z",
+  "completedAt": "2025-11-02T10:36:00Z"
+}
+```
+
+---
+
+### 3. Get Payment by Order ID
+**Endpoint:** `GET /api/payments/order/{orderId}`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):** Same as Get Payment by ID
+
+---
+
+### 4. Get My Payments
+**Endpoint:** `GET /api/payments/my-payments?page=1&pageSize=10`  
+**Authorization:** Bearer Token Required
+
+**Query Parameters:**
+- `page` (default: 1)
+- `pageSize` (default: 10)
+
+**Response (200 OK):**
+```json
+{
+  "items": [
+    {
+      "id": "guid",
+      "paymentNumber": "PAY-2025-000100",
+      "orderId": "guid",
+      "amount": 863.98,
+      "method": "Online",
+      "status": "Completed",
+      "createdAt": "2025-11-02T10:35:00Z"
+    }
+  ],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalCount": 25,
+  "totalPages": 3
+}
+```
+
+---
+
+### 5. Refund Payment (Admin)
+**Endpoint:** `POST /api/payments/{id}/refund`  
+**Authorization:** Bearer Token Required (Admin)
+
+**Request Body:**
+```json
+{
+  "amount": 863.98,
+  "reason": "Customer request"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "paymentNumber": "PAY-2025-000100",
+  "status": "Refunded",
+  "refundedAmount": 863.98,
+  "refundReason": "Customer request",
+  "refundedAt": "2025-11-02T12:00:00Z"
+}
+```
+
+---
+
+### 6. Cancel Payment
+**Endpoint:** `POST /api/payments/{id}/cancel`  
+**Authorization:** Bearer Token Required
+
+**Response (200 OK):**
+```json
+{
+  "id": "guid",
+  "paymentNumber": "PAY-2025-000100",
+  "status": "Cancelled",
+  "cancelledAt": "2025-11-02T11:00:00Z"
+}
+```
+
+---
+
+### 7. PayOS Webhook
+**Endpoint:** `POST /api/payments/webhook`  
+**Note:** This endpoint is called by PayOS payment provider
+
+**Request Body:**
+```json
+{
+  "code": "00",
+  "desc": "Success",
+  "data": {
+    "orderCode": 123456789,
+    "amount": 86398,
+    "description": "Payment for order",
+    "accountNumber": "1234567890",
+    "reference": "FT123456",
+    "transactionDateTime": "2025-11-02T10:36:00Z"
+  },
+  "signature": "signature_hash"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Webhook processed successfully"
+}
+```
+
+---
+
+### 8. PayOS Return URL
+**Endpoint:** `GET /api/payments/return`  
+**Note:** User is redirected here after payment
+
+**Query Parameters:**
+- `code` - Response code
+- `id` - Payment ID
+- `cancel` - Cancellation flag
+- `status` - Payment status
+- `orderCode` - Order code
+
+**Response:** Redirect to appropriate page
+- Success: `/payment/success?orderCode={orderCode}`
+- Cancelled: `/payment/cancelled?orderCode={orderCode}`
+- Failed: `/payment/failed?orderCode={orderCode}&status={status}`
+
+---
+
+## Xử lý lỗi
 
 ### HTTP Status Codes
 
@@ -508,314 +1685,113 @@ Authorization: Bearer {access_token}
 |------------|-------------|
 | 200 | OK - Request succeeded |
 | 201 | Created - Resource created successfully |
-| 204 | No Content - Request succeeded with no content to return |
+| 204 | No Content - Request succeeded with no content |
 | 400 | Bad Request - Invalid request data |
-| 401 | Unauthorized - Authentication required or failed |
-| 403 | Forbidden - Authenticated but not authorized |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Not authorized |
 | 404 | Not Found - Resource not found |
-| 409 | Conflict - Resource conflict (e.g., duplicate) |
-| 422 | Unprocessable Entity - Validation error |
+| 409 | Conflict - Resource conflict |
 | 429 | Too Many Requests - Rate limit exceeded |
-| 500 | Internal Server Error - Server error |
-| 503 | Service Unavailable - Service temporarily unavailable |
+| 500 | Internal Server Error |
+
+---
 
 ### Error Response Format
 
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "VALIDATION_ERROR",
-      "message": "Email is required",
-      "field": "email"
-    },
-    {
-      "code": "INVALID_FORMAT",
-      "message": "Invalid email format",
-      "field": "email"
-    }
-  ],
-  "message": "Request validation failed",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "abc123-def456-ghi789",
-  "path": "/api/v1/users/register"
+  "message": "Error description"
 }
 ```
 
-### Common Error Codes
-
-| Error Code | Description |
-|-----------|-------------|
-| VALIDATION_ERROR | Input validation failed |
-| INVALID_FORMAT | Invalid data format |
-| REQUIRED_FIELD | Required field missing |
-| UNAUTHORIZED | Authentication required |
-| FORBIDDEN | Insufficient permissions |
-| NOT_FOUND | Resource not found |
-| ALREADY_EXISTS | Resource already exists |
-| CONFLICT | Resource conflict |
-| EXPIRED_TOKEN | Token has expired |
-| INVALID_TOKEN | Invalid or malformed token |
-| INSUFFICIENT_STOCK | Not enough items in stock |
-| PAYMENT_FAILED | Payment processing failed |
-| RATE_LIMIT_EXCEEDED | Too many requests |
-| SERVICE_UNAVAILABLE | Service temporarily unavailable |
-| INTERNAL_ERROR | Internal server error |
-
-### Example Error Scenarios
+### Common Error Examples
 
 #### Validation Error (400)
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "VALIDATION_ERROR",
-      "message": "Password must be at least 8 characters",
-      "field": "password"
-    },
-    {
-      "code": "INVALID_FORMAT",
-      "message": "Email format is invalid",
-      "field": "email"
-    }
-  ],
-  "message": "Validation failed",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "abc123"
+  "message": "Email is required"
 }
 ```
 
 #### Authentication Error (401)
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "UNAUTHORIZED",
-      "message": "Invalid credentials"
-    }
-  ],
-  "message": "Authentication failed",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "def456"
+  "message": "Invalid credentials"
 }
 ```
 
 #### Authorization Error (403)
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "FORBIDDEN",
-      "message": "You do not have permission to access this resource"
-    }
-  ],
-  "message": "Access denied",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "ghi789"
+  "message": "You do not have permission to access this resource"
 }
 ```
 
 #### Not Found Error (404)
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "NOT_FOUND",
-      "message": "Product with ID 'prod-999' not found"
-    }
-  ],
-  "message": "Resource not found",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "jkl012"
+  "message": "Product not found"
 }
 ```
 
-#### Stock Error (409)
+#### Conflict Error (409)
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "INSUFFICIENT_STOCK",
-      "message": "Only 5 items available, requested 10",
-      "field": "quantity",
-      "availableStock": 5,
-      "requestedQuantity": 10
-    }
-  ],
-  "message": "Insufficient stock",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "mno345"
+  "message": "Email already exists"
 }
 ```
 
 #### Rate Limit Error (429)
 ```json
 {
-  "success": false,
-  "errors": [
-    {
-      "code": "RATE_LIMIT_EXCEEDED",
-      "message": "Rate limit exceeded. Try again in 60 seconds"
-    }
-  ],
-  "message": "Too many requests",
-  "timestamp": "2025-11-02T10:30:00Z",
-  "traceId": "pqr678",
-  "retryAfter": 60
+  "message": "Too many requests. Please try again later."
 }
 ```
+
+---
+
+## Authentication & Authorization
+
+### JWT Token Structure
+
+**Access Token:**
+- Expires in: 1 hour
+- Contains: User ID, Email, Username, Role
+
+**Refresh Token:**
+- Expires in: 7 days
+- Used to obtain new access token
+
+### Using Bearer Token
+
+Include the access token in the Authorization header:
+
+```http
+Authorization: Bearer {access_token}
+```
+
+### User Roles
+
+- **Customer** - Regular user with basic permissions
+- **Admin** - Administrator with full permissions
+
+### Protected Endpoints
+
+Most endpoints require authentication. Admin-only endpoints are marked with "(Admin)" in the documentation.
 
 ---
 
 ## Rate Limiting
 
-### Rate Limit Headers
+### Rate Limits by Endpoint
 
-All API responses include rate limiting information:
-
-```http
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1698930000
-```
-
-### Rate Limits by Plan
-
-| Plan | Requests per Hour | Burst Limit |
-|------|------------------|-------------|
-| Guest | 100 | 10 |
-| Customer | 1000 | 50 |
-| Premium | 5000 | 100 |
-| Admin | 10000 | 200 |
-
-### Rate Limit Exceeded Response
-
-```json
-{
-  "success": false,
-  "errors": [
-    {
-      "code": "RATE_LIMIT_EXCEEDED",
-      "message": "API rate limit exceeded"
-    }
-  ],
-  "message": "Too many requests",
-  "retryAfter": 3600,
-  "timestamp": "2025-11-02T10:30:00Z"
-}
-```
-
----
-
-## Webhooks
-
-### Webhook Events
-
-The platform can send webhooks for the following events:
-
-| Event | Description |
-|-------|-------------|
-| order.created | New order created |
-| order.paid | Order payment confirmed |
-| order.shipped | Order has been shipped |
-| order.delivered | Order has been delivered |
-| order.cancelled | Order has been cancelled |
-| payment.succeeded | Payment succeeded |
-| payment.failed | Payment failed |
-| payment.refunded | Payment refunded |
-| product.created | New product created |
-| product.updated | Product updated |
-| product.deleted | Product deleted |
-| user.created | New user registered |
-
-### Webhook Registration
-
-```http
-POST /api/v1/webhooks
-Authorization: Bearer {admin_access_token}
-Content-Type: application/json
-
-{
-  "url": "https://your-domain.com/webhooks/ecommerce",
-  "events": [
-    "order.created",
-    "order.paid",
-    "order.shipped"
-  ],
-  "secret": "your_webhook_secret"
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "webhook-001",
-    "url": "https://your-domain.com/webhooks/ecommerce",
-    "events": [
-      "order.created",
-      "order.paid",
-      "order.shipped"
-    ],
-    "status": "active",
-    "createdAt": "2025-11-02T10:30:00Z"
-  }
-}
-```
-
-### Webhook Payload Format
-
-```json
-{
-  "id": "evt_123456",
-  "type": "order.created",
-  "createdAt": "2025-11-02T10:30:00Z",
-  "data": {
-    "object": {
-      "id": "order-100",
-      "orderNumber": "ORD-2025-000100",
-      "userId": "user-123",
-      "status": "pending",
-      "total": 863.98,
-      "items": [...]
-    }
-  }
-}
-```
-
-### Webhook Signature Verification
-
-Each webhook includes a signature header:
-
-```http
-X-Webhook-Signature: sha256=abc123def456...
-```
-
-**Verification Example (C#):**
-```csharp
-public bool VerifyWebhookSignature(string payload, string signature, string secret)
-{
-    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
-    var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
-    var computedSignature = $"sha256={BitConverter.ToString(hash).Replace("-", "").ToLower()}";
-    
-    return signature == computedSignature;
-}
-```
-
-### Webhook Retry Policy
-
-- **Maximum Retries**: 5
-- **Retry Intervals**: 1m, 5m, 30m, 1h, 3h
-- **Timeout**: 30 seconds
-- **Success Codes**: 200-299
+| Endpoint | Limit |
+|----------|-------|
+| `/api/auth/register` | Rate limited |
+| `/api/auth/login` | Rate limited |
+| `/api/auth/forgot-password` | Rate limited |
+| `/api/auth/reset-password` | Rate limited |
+| Other endpoints | No specific limit |
 
 ---
 
@@ -826,93 +1802,29 @@ public bool VerifyWebhookSignature(string payload, string signature, string secr
 Authorization: Bearer {access_token}
 ```
 
-### 2. Use Correlation IDs for Tracing
-```http
-X-Correlation-Id: unique-request-id
-```
+### 2. Handle Token Expiration
+When you receive a 401 error, use the refresh token to get a new access token.
 
-### 3. Handle Pagination
-```http
-GET /api/v1/products?pageNumber=1&pageSize=20
-```
+### 3. Implement Retry Logic
+For failed requests, implement exponential backoff retry logic.
 
-### 4. Implement Retry Logic with Exponential Backoff
-```csharp
-var retryPolicy = Policy
-    .Handle<HttpRequestException>()
-    .WaitAndRetryAsync(3, retryAttempt => 
-        TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-```
+### 4. Validate Input on Client Side
+Validate data before sending to the API to reduce errors.
 
-### 5. Cache Responses When Appropriate
-```http
-Cache-Control: public, max-age=3600
-ETag: "abc123"
-```
-
-### 6. Use Idempotency Keys for Critical Operations
-```http
-POST /api/v1/payments/process
-Idempotency-Key: unique-operation-id
-```
-
-### 7. Validate Input on Client Side
-Before making API calls, validate:
-- Required fields
-- Data formats
-- Business rules
-
-### 8. Handle Errors Gracefully
-```javascript
-try {
-  const response = await fetch('/api/v1/products');
-  if (!response.ok) {
-    const error = await response.json();
-    handleError(error);
-  }
-  const data = await response.json();
-  return data;
-} catch (error) {
-  console.error('API Error:', error);
-  showUserFriendlyError();
-}
-```
+### 5. Handle Errors Gracefully
+Always check response status and handle errors appropriately.
 
 ---
 
 ## API Client Examples
 
-### cURL
-```bash
-# Login
-curl -X POST https://api.ecommerce.com/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "SecurePass123!"
-  }'
-
-# Get Products
-curl -X GET "https://api.ecommerce.com/api/v1/products?pageNumber=1&pageSize=20" \
-  -H "Authorization: Bearer {access_token}"
-
-# Create Order
-curl -X POST https://api.ecommerce.com/api/v1/orders \
-  -H "Authorization: Bearer {access_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "shippingAddressId": "addr-001",
-    "billingAddressId": "addr-001",
-    "paymentMethodId": "pm-001"
-  }'
-```
-
 ### JavaScript/TypeScript (Axios)
+
 ```typescript
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://api.ecommerce.com/api',
+  baseURL: 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -929,29 +1841,34 @@ api.interceptors.request.use(config => {
 
 // Login
 const login = async (email: string, password: string) => {
-  const response = await api.post('/v1/auth/login', {
+  const response = await api.post('/api/auth/login', {
     email,
     password
   });
+  localStorage.setItem('accessToken', response.data.accessToken);
+  localStorage.setItem('refreshToken', response.data.refreshToken);
   return response.data;
 };
 
 // Get Products
-const getProducts = async (pageNumber = 1, pageSize = 20) => {
-  const response = await api.get('/v1/products', {
+const getProducts = async (pageNumber = 1, pageSize = 10) => {
+  const response = await api.get('/api/products', {
     params: { pageNumber, pageSize }
   });
   return response.data;
 };
 
 // Create Order
-const createOrder = async (orderData: CreateOrderDto) => {
-  const response = await api.post('/v1/orders', orderData);
+const createOrder = async (orderData) => {
+  const response = await api.post('/api/orders', orderData);
   return response.data;
 };
 ```
 
+---
+
 ### C# (.NET)
+
 ```csharp
 public class ECommerceApiClient
 {
@@ -964,49 +1881,40 @@ public class ECommerceApiClient
         {
             BaseAddress = new Uri(baseUrl)
         };
-        _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
     public async Task<LoginResponse> LoginAsync(string email, string password)
     {
-        var request = new LoginRequest { Email = email, Password = password };
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/login", request);
+        var request = new { Email = email, Password = password };
+        var response = await _httpClient.PostAsJsonAsync("/api/auth/login", request);
         response.EnsureSuccessStatusCode();
         
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>();
-        _accessToken = result.Data.AccessToken;
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        _accessToken = result.AccessToken;
         
         _httpClient.DefaultRequestHeaders.Authorization = 
             new AuthenticationHeaderValue("Bearer", _accessToken);
         
-        return result.Data;
+        return result;
     }
 
-    public async Task<PagedResult<Product>> GetProductsAsync(int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResult<Product>> GetProductsAsync(int page = 1, int pageSize = 10)
     {
         var response = await _httpClient.GetAsync(
-            $"/api/v1/products?pageNumber={pageNumber}&pageSize={pageSize}");
+            $"/api/products?pageNumber={page}&pageSize={pageSize}");
         response.EnsureSuccessStatusCode();
         
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<Product>>>();
-        return result.Data;
-    }
-
-    public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
-    {
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/orders", request);
-        response.EnsureSuccessStatusCode();
-        
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<Order>>();
-        return result.Data;
+        return await response.Content.ReadFromJsonAsync<PagedResult<Product>>();
     }
 }
 ```
 
+---
+
 ### Python (Requests)
+
 ```python
 import requests
-from typing import Dict, Any
 
 class ECommerceApiClient:
     def __init__(self, base_url: str):
@@ -1014,9 +1922,9 @@ class ECommerceApiClient:
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
     
-    def login(self, email: str, password: str) -> Dict[str, Any]:
+    def login(self, email: str, password: str):
         response = self.session.post(
-            f'{self.base_url}/api/v1/auth/login',
+            f'{self.base_url}/api/auth/login',
             json={'email': email, 'password': password}
         )
         response.raise_for_status()
@@ -1024,908 +1932,89 @@ class ECommerceApiClient:
         
         # Set token for future requests
         self.session.headers.update({
-            'Authorization': f"Bearer {data['data']['accessToken']}"
+            'Authorization': f"Bearer {data['accessToken']}"
         })
         
-        return data['data']
+        return data
     
-    def get_products(self, page_number: int = 1, page_size: int = 20) -> Dict[str, Any]:
+    def get_products(self, page_number: int = 1, page_size: int = 10):
         response = self.session.get(
-            f'{self.base_url}/api/v1/products',
+            f'{self.base_url}/api/products',
             params={'pageNumber': page_number, 'pageSize': page_size}
         )
         response.raise_for_status()
-        return response.json()['data']
+        return response.json()
     
-    def create_order(self, order_data: Dict[str, Any]) -> Dict[str, Any]:
+    def create_order(self, order_data: dict):
         response = self.session.post(
-            f'{self.base_url}/api/v1/orders',
+            f'{self.base_url}/api/orders',
             json=order_data
         )
         response.raise_for_status()
-        return response.json()['data']
+        return response.json()
 ```
 
 ---
 
-## Testing APIs
+### cURL Examples
 
-### Postman Collection
-Import the provided Postman collection for easy API testing:
-- [Download Postman Collection](./postman/ecommerce-api.json)
+```bash
+# Login
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "SecurePass123!"
+  }'
 
-### Environment Variables
-```json
-{
-  "baseUrl": "http://localhost:5000/api",
-  "accessToken": "",
-  "refreshToken": "",
-  "userId": "",
-  "productId": "",
-  "orderId": ""
-}
-```
+# Get Products
+curl -X GET "http://localhost:5000/api/products?pageNumber=1&pageSize=20" \
+  -H "Authorization: Bearer {access_token}"
 
-### Automated Tests
-Use the provided test scripts to validate API responses.
+# Create Order
+curl -X POST http://localhost:5000/api/orders \
+  -H "Authorization: Bearer {access_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shippingAddressId": "guid",
+    "paymentMethod": 0,
+    "notes": "Please deliver between 2-5 PM"
+  }'
 
----
+# Get Cart
+curl -X GET http://localhost:5000/api/cart \
+  -H "Authorization: Bearer {access_token}"
 
-## API Versioning Strategy
-
-### Current Version: v1
-
-### Deprecation Policy
-- New versions announced 6 months in advance
-- Old versions supported for 12 months after deprecation
-- Breaking changes only in new major versions
-
-### Version Header
-```http
-X-API-Version: v1
-```
-
----
-
-## Support and Resources
-
-### Documentation
-- API Reference: https://docs.ecommerce.com/api
-- OpenAPI Spec: https://api.ecommerce.com/swagger
-
-### Support Channels
-- Email: api-support@ecommerce.com
-- Developer Portal: https://developer.ecommerce.com
-- Status Page: https://status.ecommerce.com
-
-### SDKs
-- .NET: `dotnet add package ECommerce.SDK`
-- JavaScript: `npm install @ecommerce/sdk`
-- Python: `pip install ecommerce-sdk`
-
----
-
-**API Version**: v1  
-**Last Updated**: November 2025  
-**Maintained By**: API Team Address
-```http
-DELETE /api/v1/users/addresses/{addressId}
-Authorization: Bearer {access_token}
-```
-
-**Response (204 No Content)**
-
----
-
-## Product Catalog Service API
-
-### Base Path: `/api/v1/products`
-
-### Get All Products
-```http
-GET /api/v1/products?pageNumber=1&pageSize=20&category=electronics&minPrice=100&maxPrice=1000&sortBy=price&sortOrder=asc
-Authorization: Bearer {access_token} (optional)
-```
-
-**Query Parameters:**
-- `pageNumber` (default: 1)
-- `pageSize` (default: 20, max: 100)
-- `category` (optional)
-- `minPrice` (optional)
-- `maxPrice` (optional)
-- `sortBy` (optional: name, price, createdAt, rating)
-- `sortOrder` (optional: asc, desc)
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "id": "prod-001",
-        "name": "Wireless Headphones",
-        "slug": "wireless-headphones",
-        "description": "High-quality noise-canceling headphones",
-        "price": 299.99,
-        "compareAtPrice": 399.99,
-        "sku": "WH-001",
-        "category": {
-          "id": "cat-001",
-          "name": "Electronics",
-          "slug": "electronics"
-        },
-        "images": [
-          {
-            "url": "https://cdn.example.com/products/wh-001-1.jpg",
-            "alt": "Wireless Headphones Front View",
-            "isPrimary": true
-          }
-        ],
-        "stock": 150,
-        "inStock": true,
-        "rating": 4.5,
-        "reviewCount": 234,
-        "tags": ["wireless", "bluetooth", "noise-canceling"],
-        "attributes": [
-          {
-            "name": "Color",
-            "value": "Black"
-          },
-          {
-            "name": "Battery Life",
-            "value": "30 hours"
-          }
-        ],
-        "createdAt": "2024-01-15T00:00:00Z",
-        "updatedAt": "2025-11-01T12:00:00Z"
-      }
-    ],
-    "pageNumber": 1,
-    "pageSize": 20,
-    "totalPages": 10,
-    "totalCount": 195
-  }
-}
-```
-
-### Get Product by ID
-```http
-GET /api/v1/products/{productId}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "prod-001",
-    "name": "Wireless Headphones",
-    "slug": "wireless-headphones",
-    "description": "High-quality noise-canceling headphones with 30-hour battery life...",
-    "longDescription": "Detailed product description...",
-    "price": 299.99,
-    "compareAtPrice": 399.99,
-    "sku": "WH-001",
-    "category": {
-      "id": "cat-001",
-      "name": "Electronics",
-      "slug": "electronics"
-    },
-    "images": [...],
-    "stock": 150,
-    "inStock": true,
-    "rating": 4.5,
-    "reviewCount": 234,
-    "reviews": [
-      {
-        "id": "rev-001",
-        "userId": "user-123",
-        "userName": "John D.",
-        "rating": 5,
-        "title": "Excellent headphones!",
-        "comment": "Best purchase I've made this year...",
-        "createdAt": "2025-10-15T10:30:00Z"
-      }
-    ],
-    "specifications": {
-      "brand": "AudioTech",
-      "model": "AT-WH1000",
-      "weight": "250g",
-      "warranty": "2 years"
-    },
-    "relatedProducts": ["prod-002", "prod-003"]
-  }
-}
-```
-
-### Search Products
-```http
-GET /api/v1/products/search?q=headphones&pageNumber=1&pageSize=20
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "items": [...],
-    "query": "headphones",
-    "totalCount": 42,
-    "pageNumber": 1,
-    "pageSize": 20
-  }
-}
-```
-
-### Create Product (Admin Only)
-```http
-POST /api/v1/products
-Authorization: Bearer {admin_access_token}
-Content-Type: application/json
-
-{
-  "name": "Smart Watch Pro",
-  "slug": "smart-watch-pro",
-  "description": "Advanced fitness tracking smartwatch",
-  "longDescription": "Full detailed description...",
-  "price": 399.99,
-  "compareAtPrice": 499.99,
-  "sku": "SW-PRO-001",
-  "categoryId": "cat-002",
-  "images": [
-    {
-      "url": "https://cdn.example.com/products/sw-001-1.jpg",
-      "alt": "Smart Watch Front",
-      "isPrimary": true
-    }
-  ],
-  "stock": 100,
-  "tags": ["smartwatch", "fitness", "health"],
-  "attributes": [
-    {
-      "name": "Color",
-      "value": "Silver"
-    }
-  ],
-  "specifications": {
-    "brand": "TechWear",
-    "waterResistance": "5ATM"
-  }
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "prod-100",
-    "name": "Smart Watch Pro",
-    "slug": "smart-watch-pro",
-    ...
-  },
-  "message": "Product created successfully"
-}
-```
-
-### Update Product (Admin Only)
-```http
-PUT /api/v1/products/{productId}
-Authorization: Bearer {admin_access_token}
-Content-Type: application/json
-
-{
-  "name": "Smart Watch Pro - Updated",
-  "price": 379.99,
-  "stock": 120
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {...},
-  "message": "Product updated successfully"
-}
-```
-
-### Delete Product (Admin Only)
-```http
-DELETE /api/v1/products/{productId}
-Authorization: Bearer {admin_access_token}
-```
-
-**Response (204 No Content)**
-
-### Get Categories
-```http
-GET /api/v1/categories
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "cat-001",
-      "name": "Electronics",
-      "slug": "electronics",
-      "description": "Electronic devices and accessories",
-      "image": "https://cdn.example.com/categories/electronics.jpg",
-      "productCount": 245,
-      "parentId": null,
-      "children": [
-        {
-          "id": "cat-001-01",
-          "name": "Audio",
-          "slug": "electronics-audio",
-          "productCount": 87
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Product Reviews
-
-#### Add Review
-```http
-POST /api/v1/products/{productId}/reviews
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "rating": 5,
-  "title": "Amazing product!",
-  "comment": "I love this product. Highly recommended!",
-  "orderId": "order-123"
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "rev-100",
-    "productId": "prod-001",
-    "userId": "user-123",
-    "rating": 5,
-    "title": "Amazing product!",
-    "comment": "I love this product. Highly recommended!",
-    "createdAt": "2025-11-02T10:30:00Z"
-  }
-}
+# Add to Cart
+curl -X POST http://localhost:5000/api/cart/items \
+  -H "Authorization: Bearer {access_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "productId": "guid",
+    "quantity": 1
+  }'
 ```
 
 ---
 
-## Shopping Cart Service API
+## Changelog
 
-### Base Path: `/api/v1/cart`
-
-### Get Cart
-```http
-GET /api/v1/cart
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "userId": "user-123",
-    "items": [
-      {
-        "id": "cart-item-001",
-        "productId": "prod-001",
-        "productName": "Wireless Headphones",
-        "productImage": "https://cdn.example.com/products/wh-001-1.jpg",
-        "sku": "WH-001",
-        "price": 299.99,
-        "quantity": 2,
-        "subtotal": 599.98,
-        "addedAt": "2025-11-01T14:30:00Z"
-      },
-      {
-        "id": "cart-item-002",
-        "productId": "prod-002",
-        "productName": "Smart Watch",
-        "productImage": "https://cdn.example.com/products/sw-001-1.jpg",
-        "sku": "SW-001",
-        "price": 399.99,
-        "quantity": 1,
-        "subtotal": 399.99,
-        "addedAt": "2025-11-02T09:15:00Z"
-      }
-    ],
-    "itemCount": 3,
-    "subtotal": 999.97,
-    "discount": 0,
-    "tax": 79.99,
-    "total": 1079.96,
-    "couponCode": null,
-    "updatedAt": "2025-11-02T09:15:00Z"
-  }
-}
-```
-
-### Add Item to Cart
-```http
-POST /api/v1/cart/items
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "productId": "prod-003",
-  "quantity": 1
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "cart-item-003",
-    "productId": "prod-003",
-    "productName": "Laptop Stand",
-    "price": 49.99,
-    "quantity": 1,
-    "subtotal": 49.99
-  },
-  "message": "Item added to cart"
-}
-```
-
-### Update Cart Item
-```http
-PUT /api/v1/cart/items/{itemId}
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "quantity": 3
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "cart-item-001",
-    "quantity": 3,
-    "subtotal": 899.97
-  },
-  "message": "Cart item updated"
-}
-```
-
-### Remove Item from Cart
-```http
-DELETE /api/v1/cart/items/{itemId}
-Authorization: Bearer {access_token}
-```
-
-**Response (204 No Content)**
-
-### Clear Cart
-```http
-DELETE /api/v1/cart
-Authorization: Bearer {access_token}
-```
-
-**Response (204 No Content)**
-
-### Apply Coupon
-```http
-POST /api/v1/cart/apply-coupon
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "couponCode": "SAVE20"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "couponCode": "SAVE20",
-    "discountType": "percentage",
-    "discountValue": 20,
-    "discountAmount": 199.99,
-    "subtotal": 999.97,
-    "discount": 199.99,
-    "tax": 64.00,
-    "total": 863.98
-  },
-  "message": "Coupon applied successfully"
-}
-```
-
-### Remove Coupon
-```http
-DELETE /api/v1/cart/coupon
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK)**
+### Version 1.0.0 (December 2025)
+- Initial API documentation
+- Complete documentation for all services:
+  - Authentication Service
+  - User Service
+  - Product Service
+  - Shopping Cart Service
+  - Order Service
+  - Payment Service
+- Added API client examples for JavaScript, C#, Python, and cURL
+- Documented all endpoints with request/response examples
+- Added error handling documentation
+- Added rate limiting information
 
 ---
 
-## Order Service API
-
-### Base Path: `/api/v1/orders`
-
-### Create Order
-```http
-POST /api/v1/orders
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "shippingAddressId": "addr-001",
-  "billingAddressId": "addr-001",
-  "paymentMethodId": "pm-001",
-  "couponCode": "SAVE20",
-  "notes": "Please deliver between 2-5 PM"
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "order-100",
-    "orderNumber": "ORD-2025-000100",
-    "userId": "user-123",
-    "status": "pending",
-    "items": [
-      {
-        "id": "order-item-001",
-        "productId": "prod-001",
-        "productName": "Wireless Headphones",
-        "sku": "WH-001",
-        "price": 299.99,
-        "quantity": 2,
-        "subtotal": 599.98
-      }
-    ],
-    "subtotal": 999.97,
-    "discount": 199.99,
-    "tax": 64.00,
-    "shippingCost": 0,
-    "total": 863.98,
-    "shippingAddress": {
-      "street": "123 Main St",
-      "city": "New York",
-      "state": "NY",
-      "zipCode": "10001",
-      "country": "USA"
-    },
-    "billingAddress": {...},
-    "paymentMethod": "Credit Card",
-    "couponCode": "SAVE20",
-    "notes": "Please deliver between 2-5 PM",
-    "createdAt": "2025-11-02T10:30:00Z"
-  },
-  "message": "Order created successfully"
-}
-```
-
-### Get Order by ID
-```http
-GET /api/v1/orders/{orderId}
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "order-100",
-    "orderNumber": "ORD-2025-000100",
-    "status": "shipped",
-    "statusHistory": [
-      {
-        "status": "pending",
-        "timestamp": "2025-11-02T10:30:00Z",
-        "note": "Order created"
-      },
-      {
-        "status": "paid",
-        "timestamp": "2025-11-02T10:35:00Z",
-        "note": "Payment confirmed"
-      },
-      {
-        "status": "processing",
-        "timestamp": "2025-11-02T11:00:00Z",
-        "note": "Order is being prepared"
-      },
-      {
-        "status": "shipped",
-        "timestamp": "2025-11-02T16:00:00Z",
-        "note": "Order shipped via FedEx",
-        "trackingNumber": "123456789"
-      }
-    ],
-    "items": [...],
-    "subtotal": 999.97,
-    "discount": 199.99,
-    "tax": 64.00,
-    "shippingCost": 0,
-    "total": 863.98,
-    "shippingAddress": {...},
-    "trackingNumber": "123456789",
-    "carrier": "FedEx",
-    "estimatedDelivery": "2025-11-05T00:00:00Z",
-    "createdAt": "2025-11-02T10:30:00Z",
-    "updatedAt": "2025-11-02T16:00:00Z"
-  }
-}
-```
-
-### Get User Orders
-```http
-GET /api/v1/orders?pageNumber=1&pageSize=10&status=shipped
-Authorization: Bearer {access_token}
-```
-
-**Query Parameters:**
-- `pageNumber` (default: 1)
-- `pageSize` (default: 10)
-- `status` (optional: pending, paid, processing, shipped, delivered, cancelled)
-- `startDate` (optional)
-- `endDate` (optional)
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "id": "order-100",
-        "orderNumber": "ORD-2025-000100",
-        "status": "shipped",
-        "itemCount": 3,
-        "total": 863.98,
-        "createdAt": "2025-11-02T10:30:00Z"
-      }
-    ],
-    "pageNumber": 1,
-    "pageSize": 10,
-    "totalPages": 5,
-    "totalCount": 47
-  }
-}
-```
-
-### Cancel Order
-```http
-POST /api/v1/orders/{orderId}/cancel
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "reason": "Changed my mind"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "order-100",
-    "status": "cancelled",
-    "cancelledAt": "2025-11-02T11:00:00Z",
-    "cancelReason": "Changed my mind"
-  },
-  "message": "Order cancelled successfully"
-}
-```
-
-### Update Order Status (Admin Only)
-```http
-PUT /api/v1/orders/{orderId}/status
-Authorization: Bearer {admin_access_token}
-Content-Type: application/json
-
-{
-  "status": "shipped",
-  "note": "Order shipped via FedEx",
-  "trackingNumber": "123456789",
-  "carrier": "FedEx"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "order-100",
-    "status": "shipped",
-    "trackingNumber": "123456789",
-    "carrier": "FedEx"
-  },
-  "message": "Order status updated"
-}
-```
-
-### Get Invoice
-```http
-GET /api/v1/orders/{orderId}/invoice
-Authorization: Bearer {access_token}
-Accept: application/pdf
-```
-
-**Response (200 OK):**
-Returns PDF file
-
----
-
-## Payment Service API
-
-### Base Path: `/api/v1/payments`
-
-### Process Payment
-```http
-POST /api/v1/payments/process
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "orderId": "order-100",
-  "paymentMethodId": "pm-001",
-  "amount": 863.98,
-  "currency": "USD",
-  "paymentGateway": "stripe",
-  "returnUrl": "https://example.com/payment/success",
-  "cancelUrl": "https://example.com/payment/cancel"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "paymentId": "pay-123",
-    "orderId": "order-100",
-    "status": "succeeded",
-    "amount": 863.98,
-    "currency": "USD",
-    "paymentMethod": "card",
-    "last4": "4242",
-    "brand": "visa",
-    "transactionId": "txn_abc123",
-    "receipt": "https://stripe.com/receipt/xyz",
-    "createdAt": "2025-11-02T10:35:00Z"
-  },
-  "message": "Payment processed successfully"
-}
-```
-
-### Get Payment Details
-```http
-GET /api/v1/payments/{paymentId}
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "pay-123",
-    "orderId": "order-100",
-    "status": "succeeded",
-    "amount": 863.98,
-    "currency": "USD",
-    "paymentMethod": "card",
-    "last4": "4242",
-    "brand": "visa",
-    "transactionId": "txn_abc123",
-    "receipt": "https://stripe.com/receipt/xyz",
-    "refunds": [],
-    "createdAt": "2025-11-02T10:35:00Z"
-  }
-}
-```
-
-### Refund Payment
-```http
-POST /api/v1/payments/{paymentId}/refund
-Authorization: Bearer {admin_access_token}
-Content-Type: application/json
-
-{
-  "amount": 863.98,
-  "reason": "Customer request"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "refundId": "ref-123",
-    "paymentId": "pay-123",
-    "amount": 863.98,
-    "status": "succeeded",
-    "reason": "Customer request",
-    "createdAt": "2025-11-02T12:00:00Z"
-  },
-  "message": "Refund processed successfully"
-}
-```
-
-### Add Payment Method
-```http
-POST /api/v1/payments/methods
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "type": "card",
-  "cardToken": "tok_visa",
-  "isDefault": true
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "pm-002",
-    "type": "card",
-    "last4": "4242",
-    "brand": "visa",
-    "expiryMonth": 12,
-    "expiryYear": 2026,
-    "isDefault": true,
-    "createdAt": "2025-11-02T10:30:00Z"
-  }
-}
-```
-
-### Get Payment Methods
-```http
-GET /api/v1/payments/methods
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "pm-001",
-      "type": "card",
-      "last4": "4242",
-      "brand": "visa",
-      "expiryMonth": 12,
-      "expiryYear": 2025,
-      "isDefault": true
-    }
-  ]
-}
-```
-
-### Delete
+**API Version**: 1.0  
+**Last Updated**: December 2, 2025  
+**Maintained By**: Development Team
